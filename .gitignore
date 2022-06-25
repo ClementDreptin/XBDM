@@ -1,0 +1,8 @@
+# Binaries and project files / Makefiles
+build/
+
+# Visual Studio Code settings
+.vscode/
+
+# premake binaries
+tools/premake/premake*
