@@ -11,12 +11,11 @@ AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 0 # Disabling ColumnLimit is necessary to make BreakConstructorInitializers: BeforeColumn work
 Cpp11BracedListStyle: false
 FixNamespaceComments: false
-IncludeBlocks: Regroup
 IndentPPDirectives: BeforeHash
 KeepEmptyLinesAtTheStartOfBlocks: false
 RemoveBracesLLVM: true
 SeparateDefinitionBlocks: Always
-SortIncludes: CaseInsensitive
+SortIncludes: Never # Sorting includes would be nice but pch.h always needs to be at the top
 SpaceAfterTemplateKeyword: false
 SpaceBeforeParens: ControlStatements
 SpacesInLineCommentPrefix:
