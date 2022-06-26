@@ -1,8 +1,12 @@
 #include "pch.h"
 #include "Console.h"
 
+#include "Utils.h"
+
 namespace XBDM
 {
+
+using namespace std::chrono_literals;
 
 Console::Console()
     : m_Socket(INVALID_SOCKET)
@@ -204,7 +208,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
         {
             file.Name = fileName;
             file.Size = static_cast<UINT64>(GetIntegerProperty(line, "sizehi")) << 32 | static_cast<UINT64>(GetIntegerProperty(line, "sizelo"));
-            file.IsDirectory = EndsWith(line, " directory");
+            file.IsDirectory = Utils::String::EndsWith(line, " directory");
 
             std::filesystem::path filePath(file.Name);
             file.IsXEX = filePath.extension() == ".xex";
@@ -363,7 +367,7 @@ void Console::SendFile(const std::string &remotePath, const std::string &localPa
         ZeroMemory(contentBuffer, sizeof(contentBuffer));
 
         // Give the Xbox 360 some time to process what was sent...
-        SleepFor(10);
+        std::this_thread::sleep_for(20ms);
     }
 
     file.close();
@@ -429,7 +433,7 @@ std::string Console::Receive()
     while (recv(m_Socket, buffer, s_PacketSize - 1, 0) != SOCKET_ERROR)
     {
         // Give the Xbox 360 some time to notice we received something...
-        SleepFor(10);
+        std::this_thread::sleep_for(10ms);
         result += buffer;
     }
 
@@ -452,7 +456,7 @@ void Console::SendCommand(const std::string &command)
     }
 
     // Give the Xbox 360 some time to process the command and create a response...
-    SleepFor(10);
+    std::this_thread::sleep_for(10ms);
 }
 
 std::vector<std::string> Console::SplitResponse(const std::string &response, const std::string &delimiter)
@@ -473,14 +477,6 @@ std::vector<std::string> Console::SplitResponse(const std::string &response, con
     }
 
     return result;
-}
-
-bool Console::EndsWith(const std::string &line, const std::string &ending)
-{
-    if (ending.size() > line.size())
-        return false;
-
-    return std::equal(ending.rbegin(), ending.rend(), line.rbegin());
 }
 
 DWORD Console::GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex)
@@ -539,15 +535,6 @@ void Console::CloseSocket()
     close(m_Socket);
 #endif
     m_Socket = INVALID_SOCKET;
-}
-
-void Console::SleepFor(DWORD milliseconds)
-{
-#ifdef _WIN32
-    Sleep(milliseconds);
-#else
-    usleep(milliseconds * 1000);
-#endif
 }
 
 }

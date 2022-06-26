@@ -38,7 +38,6 @@ private:
     void SendCommand(const std::string &command);
 
     std::vector<std::string> SplitResponse(const std::string &response, const std::string &delimiter);
-    bool EndsWith(const std::string &line, const std::string &ending);
 
     DWORD GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex = true);
     std::string GetStringProperty(const std::string &line, const std::string &propertyName);
@@ -46,8 +45,6 @@ private:
     void ClearSocket();
     void CleanupSocket();
     void CloseSocket();
-
-    void SleepFor(DWORD milliseconds);
 };
 
 }
