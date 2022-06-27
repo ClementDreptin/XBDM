@@ -1,3 +1,8 @@
+newoption {
+  trigger = "test",
+  description = "Compile tests.",
+}
+
 workspace "XBDM"
   startproject "XBDM"
   location (path.join(".", "build"))
@@ -48,3 +53,23 @@ project "XBDM"
 
   filter "system:windows"
     links "Ws2_32.lib"
+
+if _OPTIONS["test"] then
+  project "Tests"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+
+    local xbdmincludedir = path.join(".", "include")
+    local testdir = path.join(".", "test")
+
+    files {
+      path.join(testdir, "**.h"),
+      path.join(testdir, "**.cpp"),
+    }
+
+    includedirs {
+      testdir,
+      xbdmincludedir,
+    }
+end

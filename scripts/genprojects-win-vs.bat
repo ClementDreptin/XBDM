@@ -8,4 +8,9 @@ IF NOT EXIST "%PremakeExecutablePath%" (
     CALL "%~dp0download-premake-win.bat"
 )
 
-CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2019
+IF "%1" == "--test" (
+    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2019 --test
+) ELSE (
+    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2019
+)
+
