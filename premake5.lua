@@ -4,7 +4,9 @@ newoption {
 }
 
 workspace "XBDM"
-  startproject "XBDM"
+  local startprojectname = _OPTIONS["test"] and "Tests" or "XBDM"
+
+  startproject (startprojectname)
   location (path.join(".", "build"))
   targetdir "%{wks.location}/bin/%{cfg.buildcfg}"
   objdir "%{wks.location}/obj"
