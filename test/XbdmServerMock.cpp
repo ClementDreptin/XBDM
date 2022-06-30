@@ -8,14 +8,16 @@ SOCKET XbdmServerMock::s_Socket = INVALID_SOCKET;
 
 bool XbdmServerMock::Open()
 {
-    WSADATA wsaData;
     sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     address.sin_port = htons(XBDM_PORT);
 
+#ifdef _WIN32
+    WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         return false;
+#endif
 
     s_Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s_Socket == INVALID_SOCKET)
@@ -59,7 +61,7 @@ void XbdmServerMock::ConnectRespondAndShutdown()
 
     while (s_Running)
     {
-        clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<int *>(nullptr));
+        clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<unsigned int *>(nullptr));
         if (clientSocket == INVALID_SOCKET)
             continue;
 
@@ -68,20 +70,31 @@ void XbdmServerMock::ConnectRespondAndShutdown()
         break;
     }
 
-    closesocket(clientSocket);
+    CloseSocket(clientSocket);
     Close();
     CleanupSocket();
 }
 
-void XbdmServerMock::CleanupSocket()
-{
-    WSACleanup();
-}
-
 void XbdmServerMock::Close()
 {
-    closesocket(s_Socket);
+    CloseSocket(s_Socket);
 
     s_Running = false;
     s_Socket = INVALID_SOCKET;
+}
+
+void XbdmServerMock::CloseSocket(SOCKET socket)
+{
+#ifdef _WIN32
+    closesocket(socket);
+#else
+    close(socket);
+#endif
+}
+
+void XbdmServerMock::CleanupSocket()
+{
+#ifdef _WIN32
+    WSACleanup();
+#endif
 }

@@ -76,4 +76,7 @@ if _OPTIONS["test"] then
     }
 
     links { "XBDM" }
+
+    filter "system:linux"
+      links { "pthread" }
 end
