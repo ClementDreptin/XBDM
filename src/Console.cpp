@@ -430,7 +430,7 @@ std::string Console::Receive()
 
     // We only receive s_PacketSize - 1 bytes to make sure the last byte
     // is always 0 so that we concat a null terminated string.
-    while (recv(m_Socket, buffer, s_PacketSize - 1, 0) != SOCKET_ERROR)
+    while (recv(m_Socket, buffer, s_PacketSize - 1, 0) > 0)
     {
         // Give the Xbox 360 some time to notice we received something...
         std::this_thread::sleep_for(10ms);
