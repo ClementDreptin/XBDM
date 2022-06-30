@@ -74,4 +74,6 @@ if _OPTIONS["test"] then
       testdir,
       xbdmincludedir,
     }
+
+    links { "XBDM" }
 end

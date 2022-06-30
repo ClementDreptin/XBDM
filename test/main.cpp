@@ -1,26 +1,27 @@
-#include "XBDM.h"
-
 #include "Macros.h"
+#include "XBDM.h"
+#include "XbdmServerMock.h"
 
-bool PassingTest()
-{
-    return true;
-}
+#include <thread>
 
-bool FailingTest()
+#define TARGET_HOST "127.0.0.1"
+
+static bool ConnectToSocketAndShutdown()
 {
-    return false;
+    std::thread thread(XbdmServerMock::ConnectRespondAndShutdown);
+    XBDM::Console console(TARGET_HOST);
+
+    bool connectionSuccess = console.OpenConnection();
+    thread.join();
+
+    return connectionSuccess;
 }
 
 int main()
 {
     TEST_INIT();
 
-    TEST_F(PassingTest, "First test should pass");
-    TEST_F(PassingTest, "Second test should pass");
-    TEST_F(FailingTest, "Third test should pass");
-    TEST_F(FailingTest, "Third test should pass");
-    TEST_F(PassingTest, "Fourth test should pass");
+    TEST_F(ConnectToSocketAndShutdown, "ConnectToSocketAndShutdown should pass");
 
     TEST_SHUTDOWN();
 }
