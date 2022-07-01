@@ -59,9 +59,13 @@ void XbdmServerMock::ConnectRespondAndShutdown()
 
     SOCKET clientSocket = INVALID_SOCKET;
 
+#ifdef _WIN32
+    typedef int socklen_t;
+#endif
+
     while (s_Running)
     {
-        clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<unsigned int *>(nullptr));
+        clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
         if (clientSocket == INVALID_SOCKET)
             continue;
 

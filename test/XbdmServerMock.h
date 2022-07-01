@@ -9,7 +9,7 @@
     #include <unistd.h>
 #endif
 
-#ifndef _WIND32
+#ifndef _WIN32
 // clang-format off
     typedef int SOCKET;
 // clang-format on
