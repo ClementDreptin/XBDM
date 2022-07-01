@@ -1,0 +1,65 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config: [debug, release]
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v3
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Generate project files
+        run: .\scripts\genprojects-win-vs.bat --test
+
+      - name: Build ${{ matrix.config }} binaries
+        run: cd build && msbuild /p:Configuration=${{ matrix.config }} XBDM.sln
+
+      - name: Run tests in ${{ matrix.config }} mode
+        run: .\bin\${{ matrix.config }}\Tests.exe
+
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [debug, release]
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v3
+
+      - name: Generate project files
+        run: ./scripts/genprojects-posix.sh --test
+
+      - name: Build ${{ matrix.config }} binaries
+        run: cd build && make config=${{ matrix.config }}
+
+      - name: Run tests in ${{ matrix.config }} mode
+        run: ./bin/${{ matrix.config }}/Tests
+
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        config: [debug, release]
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v3
+
+      - name: Generate project files
+        run: ./scripts/genprojects-posix.sh --test
+
+      - name: Build ${{ matrix.config }} binaries
+        run: cd build && make config=${{ matrix.config }}
+
+      - name: Run tests in ${{ matrix.config }} mode
+        run: ./bin/${{ matrix.config }}/Tests

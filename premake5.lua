@@ -14,19 +14,19 @@ workspace "XBDM"
   architecture "x86_64"
 
   configurations {
-    "Debug",
-    "Release",
+    "debug",
+    "release",
   }
 
   filter "system:not macosx"
     systemversion "latest"
 
-  filter "configurations:Debug"
+  filter "configurations:debug"
     defines "DEBUG"
     runtime "Debug"
     symbols "on"
 
-  filter "configurations:Release"
+  filter "configurations:release"
     defines "RELEASE"
     runtime "Release"
     optimize "on"
