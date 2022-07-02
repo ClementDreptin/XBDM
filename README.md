@@ -20,6 +20,11 @@ Linux / macOS
 ./scripts/genprojects-posix.sh
 ```
 
+**Note:** If you want to build the tests, just pass `--test` to the script to generate the project files / Makefiles. For example:
+```
+./scripts/genprojects-posix.sh --test
+```
+
 ### Building
 
 Windows
