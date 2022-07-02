@@ -62,4 +62,4 @@ jobs:
         run: cd build && make config=${{ matrix.config }}
 
       - name: Run tests in ${{ matrix.config }} mode
-        run: sudo ./build/bin/${{ matrix.config }}/Tests
+        run: ./build/bin/${{ matrix.config }}/Tests
