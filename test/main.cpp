@@ -1,4 +1,4 @@
-#include "Macros.h"
+#include "TestRunner.h"
 #include "XBDM.h"
 #include "XbdmServerMock.h"
 
@@ -6,22 +6,21 @@
 
 #define TARGET_HOST "127.0.0.1"
 
-static bool ConnectToSocketAndShutdown()
-{
-    std::thread thread(XbdmServerMock::ConnectRespondAndShutdown);
-    XBDM::Console console(TARGET_HOST);
-
-    bool connectionSuccess = console.OpenConnection();
-    thread.join();
-
-    return connectionSuccess;
-}
-
 int main()
 {
-    TEST_INIT();
+    TestRunner runner;
 
-    TEST_F(ConnectToSocketAndShutdown, "ConnectToSocketAndShutdown should pass");
+    runner.AddTest("Connect to socket and shutdown right after", []() {
+        std::thread thread(XbdmServerMock::ConnectRespondAndShutdown);
+        XbdmServerMock::WaitForServerToListen();
 
-    TEST_SHUTDOWN();
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
+    return runner.RunTests() ? 0 : 1;
 }

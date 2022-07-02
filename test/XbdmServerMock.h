@@ -1,5 +1,8 @@
 #pragma once
 
+#include <mutex>
+#include <condition_variable>
+
 #ifdef _WIN32
     #include <WinSock2.h>
     #include <WS2tcpip.h>
@@ -24,11 +27,16 @@ public:
     XbdmServerMock() = delete;
 
     static void ConnectRespondAndShutdown();
+    static void WaitForServerToListen();
+
 private:
     static SOCKET s_Socket;
-    static bool s_Running;
+    static bool s_Listening;
+    static std::mutex s_Mutex;
+    static std::condition_variable s_Cond;
 
     static bool Open();
+    static void SignalListening();
     static void Close();
     static void CloseSocket(SOCKET socket);
     static void CleanupSocket();

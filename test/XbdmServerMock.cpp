@@ -3,8 +3,44 @@
 #define XBDM_PORT 730
 #define CONNECT_RESPONSE "201- connected\r\n"
 
-bool XbdmServerMock::s_Running = false;
+bool XbdmServerMock::s_Listening = false;
 SOCKET XbdmServerMock::s_Socket = INVALID_SOCKET;
+std::mutex XbdmServerMock::s_Mutex;
+std::condition_variable XbdmServerMock::s_Cond;
+
+void XbdmServerMock::ConnectRespondAndShutdown()
+{
+    Open();
+
+    if (listen(s_Socket, 5) == SOCKET_ERROR)
+    {
+        Close();
+        CleanupSocket();
+        return;
+    }
+
+    SignalListening();
+
+#ifdef _WIN32
+    typedef int socklen_t;
+#endif
+
+    SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+
+    if (clientSocket != INVALID_SOCKET)
+        send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
+
+    CloseSocket(clientSocket);
+    Close();
+    CleanupSocket();
+}
+
+void XbdmServerMock::WaitForServerToListen()
+{
+    std::unique_lock<std::mutex> lock(s_Mutex);
+    while (!s_Listening)
+        s_Cond.wait(lock, []() { return s_Listening; });
+}
 
 bool XbdmServerMock::Open()
 {
@@ -41,49 +77,23 @@ bool XbdmServerMock::Open()
         return false;
     }
 
-    s_Running = true;
+    s_Listening = true;
 
     return true;
 }
 
-void XbdmServerMock::ConnectRespondAndShutdown()
+void XbdmServerMock::SignalListening()
 {
-    Open();
-
-    if (listen(s_Socket, 5) == SOCKET_ERROR)
-    {
-        Close();
-        CleanupSocket();
-        return;
-    }
-
-    SOCKET clientSocket = INVALID_SOCKET;
-
-#ifdef _WIN32
-    typedef int socklen_t;
-#endif
-
-    while (s_Running)
-    {
-        clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
-        if (clientSocket == INVALID_SOCKET)
-            continue;
-
-        send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
-
-        break;
-    }
-
-    CloseSocket(clientSocket);
-    Close();
-    CleanupSocket();
+    std::lock_guard<std::mutex> lock(s_Mutex);
+    s_Listening = true;
+    s_Cond.notify_all();
 }
 
 void XbdmServerMock::Close()
 {
     CloseSocket(s_Socket);
 
-    s_Running = false;
+    s_Listening = false;
     s_Socket = INVALID_SOCKET;
 }
 
