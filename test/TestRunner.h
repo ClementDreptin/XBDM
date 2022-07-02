@@ -6,7 +6,7 @@
 #include <utility>
 
 // clang-format off
-#define TEST_EQ(expression, value) if ((expression) != (value)) throw std::runtime_error(static_cast<std::stringstream &>(std::stringstream() << "Expected " << (expression) << " to be " << (value) << " at " << __FILE__ << ":" << __LINE__).str())
+#define TEST_EQ(expression, value) if ((expression) != (value)) throw std::runtime_error(static_cast<const std::stringstream &>(std::stringstream() << "Expected " << (expression) << " to be " << (value) << " at " << __FILE__ << ":" << __LINE__).str())
 
 // clang-format on
 
