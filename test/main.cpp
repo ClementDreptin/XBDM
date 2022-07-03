@@ -36,5 +36,18 @@ int main()
         TEST_EQ(connectionSuccess, false);
     });
 
+    runner.AddTest("Connect to server but no response", []() {
+        std::thread thread(XbdmServerMock::NoResponse);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, false);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }

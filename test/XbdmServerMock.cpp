@@ -21,10 +21,6 @@ void XbdmServerMock::ConnectRespondAndShutdown()
 
     SignalListening();
 
-#ifdef _WIN32
-    typedef int socklen_t;
-#endif
-
     SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
 
     if (clientSocket != INVALID_SOCKET)
@@ -52,6 +48,28 @@ void XbdmServerMock::NoAccept()
 
     WaitForClientToRequestShutdown();
 
+    Close();
+    CleanupSocket();
+}
+
+void XbdmServerMock::NoResponse()
+{
+    Open();
+
+    if (listen(s_Socket, 5) == SOCKET_ERROR)
+    {
+        Close();
+        CleanupSocket();
+        return;
+    }
+
+    SignalListening();
+
+    SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+
+    WaitForClientToRequestShutdown();
+
+    CloseSocket(clientSocket);
     Close();
     CleanupSocket();
 }

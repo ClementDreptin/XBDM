@@ -12,7 +12,11 @@
     #include <unistd.h>
 #endif
 
-#ifndef _WIN32
+#ifdef _WIN32
+// clang-format off
+    typedef int socklen_t;
+// clang-format on
+#else
 // clang-format off
     typedef int SOCKET;
 // clang-format on
@@ -28,6 +32,7 @@ public:
 
     static void ConnectRespondAndShutdown();
     static void NoAccept();
+    static void NoResponse();
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();
