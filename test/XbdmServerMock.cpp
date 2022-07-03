@@ -102,6 +102,44 @@ void XbdmServerMock::PartialConnectResponse()
     CleanupSocket();
 }
 
+void XbdmServerMock::ConsoleNameResponse()
+{
+    Open();
+
+    if (listen(s_Socket, 5) == SOCKET_ERROR)
+    {
+        Close();
+        CleanupSocket();
+        return;
+    }
+
+    SignalListening();
+
+    SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+
+    if (clientSocket != INVALID_SOCKET)
+        send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
+
+    char requestBuffer[1024] = { 0 };
+    int received = recv(clientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    if (strcmp(requestBuffer, "dbgname\r\n") != 0)
+    {
+        CloseSocket(clientSocket);
+        Close();
+        CleanupSocket();
+        return;
+    }
+
+    const char *consoleNameResponse = "200- TestXDK\r\n";
+    send(clientSocket, consoleNameResponse, strlen(consoleNameResponse), 0);
+
+    WaitForClientToRequestShutdown();
+
+    CloseSocket(clientSocket);
+    Close();
+    CleanupSocket();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);

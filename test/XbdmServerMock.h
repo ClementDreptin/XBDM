@@ -34,6 +34,7 @@ public:
     static void NoAccept();
     static void NoResponse();
     static void PartialConnectResponse();
+    static void ConsoleNameResponse();
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

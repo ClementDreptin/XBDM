@@ -93,7 +93,8 @@ std::string Console::GetName()
     if (response[0] != '2')
         throw std::runtime_error("Couldn't get the console name");
 
-    std::string result = response.substr(5, response.length() - 5);
+    std::string result = response.substr(5, response.length() - 7);
+
     return result;
 }
 

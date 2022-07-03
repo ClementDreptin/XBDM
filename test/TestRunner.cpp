@@ -17,8 +17,7 @@ bool TestRunner::RunTests()
         }
         catch (const std::exception &exception)
         {
-            std::cout << "[  FAILED  ] " << testCase.first << '\n';
-            std::cout << exception.what() << '\n';
+            std::cout << "[  FAILED  ] " << testCase.first << ". Error: " << exception.what() << '\n';
             m_FailingTests++;
         }
     }

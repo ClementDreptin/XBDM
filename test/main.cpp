@@ -62,5 +62,20 @@ int main()
         TEST_EQ(connectionSuccess, false);
     });
 
+    runner.AddTest("Get console name", []() {
+        std::thread thread(XbdmServerMock::ConsoleNameResponse);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        std::string consoleName = console.GetName();
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+        TEST_EQ(consoleName, "TestXDK");
+    });
+
     return runner.RunTests() ? 0 : 1;
 }
