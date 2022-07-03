@@ -10,37 +10,45 @@ std::condition_variable XbdmServerMock::s_Cond;
 
 void XbdmServerMock::ConnectRespondAndShutdown()
 {
-    Open();
+    if (!Start())
+        return;
 
     if (listen(s_Socket, 5) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
     SignalListening();
 
     SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+    if (clientSocket == INVALID_SOCKET)
+    {
+        Shutdown();
+        return;
+    }
 
-    if (clientSocket != INVALID_SOCKET)
-        send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
+    if (send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0) == SOCKET_ERROR)
+    {
+        CloseSocket(clientSocket);
+        Shutdown();
+        return;
+    }
 
     WaitForClientToRequestShutdown();
 
     CloseSocket(clientSocket);
-    Close();
-    CleanupSocket();
+    Shutdown();
 }
 
 void XbdmServerMock::NoAccept()
 {
-    Open();
+    if (!Start())
+        return;
 
     if (listen(s_Socket, 5) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
@@ -48,113 +56,131 @@ void XbdmServerMock::NoAccept()
 
     WaitForClientToRequestShutdown();
 
-    Close();
-    CleanupSocket();
+    Shutdown();
 }
 
 void XbdmServerMock::NoResponse()
 {
-    Open();
+    if (!Start())
+        return;
 
     if (listen(s_Socket, 5) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
     SignalListening();
 
     SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+    if (clientSocket == INVALID_SOCKET)
+    {
+        Shutdown();
+        return;
+    }
 
     WaitForClientToRequestShutdown();
 
     CloseSocket(clientSocket);
-    Close();
-    CleanupSocket();
+    Shutdown();
 }
 
 void XbdmServerMock::PartialConnectResponse()
 {
-    Open();
+    if (!Start())
+        return;
 
     if (listen(s_Socket, 5) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
     SignalListening();
 
     SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
-
-    if (clientSocket != INVALID_SOCKET)
+    if (clientSocket == INVALID_SOCKET)
     {
-        const char *partialConnectResponse = "201";
-        send(clientSocket, partialConnectResponse, static_cast<int>(strlen(partialConnectResponse)), 0);
+        Shutdown();
+        return;
+    }
+
+    const char *partialConnectResponse = "201";
+    if (send(clientSocket, partialConnectResponse, static_cast<int>(strlen(partialConnectResponse)), 0) == SOCKET_ERROR)
+    {
+        CloseSocket(clientSocket);
+        Shutdown();
+        return;
     }
 
     WaitForClientToRequestShutdown();
 
     CloseSocket(clientSocket);
-    Close();
-    CleanupSocket();
+    Shutdown();
 }
 
 void XbdmServerMock::ConsoleNameResponse()
 {
-    Open();
+    if (!Start())
+        return;
 
     if (listen(s_Socket, 5) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
     SignalListening();
 
     SOCKET clientSocket = accept(s_Socket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
+    if (clientSocket == INVALID_SOCKET)
+    {
+        Shutdown();
+        return;
+    }
 
-    if (clientSocket != INVALID_SOCKET)
-        send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
+    if (send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0) == SOCKET_ERROR)
+    {
+        CloseSocket(clientSocket);
+        Shutdown();
+        return;
+    }
 
     char requestBuffer[1024] = { 0 };
     int received = recv(clientSocket, requestBuffer, sizeof(requestBuffer), 0);
     if (strcmp(requestBuffer, "dbgname\r\n") != 0)
     {
         CloseSocket(clientSocket);
-        Close();
-        CleanupSocket();
+        Shutdown();
         return;
     }
 
     const char *consoleNameResponse = "200- TestXDK\r\n";
-    send(clientSocket, consoleNameResponse, strlen(consoleNameResponse), 0);
+    if (send(clientSocket, consoleNameResponse, strlen(consoleNameResponse), 0) == SOCKET_ERROR)
+    {
+        CloseSocket(clientSocket);
+        Shutdown();
+        return;
+    }
 
     WaitForClientToRequestShutdown();
 
     CloseSocket(clientSocket);
-    Close();
-    CleanupSocket();
+    Shutdown();
 }
 
 void XbdmServerMock::WaitForServerToListen()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);
-    while (!s_Listening)
-        s_Cond.wait(lock, []() { return s_Listening; });
+    s_Cond.wait_for(lock, std::chrono::seconds(1), []() { return s_Listening; });
 }
 
 void XbdmServerMock::SendRequestToShutdownServer()
 {
-    std::lock_guard<std::mutex> lock(s_Mutex);
-    s_Listening = false;
-    s_Cond.notify_all();
+    StopListening();
 }
 
-bool XbdmServerMock::Open()
+bool XbdmServerMock::Start()
 {
     sockaddr_in address;
     address.sin_family = AF_INET;
@@ -170,22 +196,20 @@ bool XbdmServerMock::Open()
     s_Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s_Socket == INVALID_SOCKET)
     {
-        CleanupSocket();
+        Cleanup();
         return false;
     }
 
     int yes = 1;
-    if (setsockopt(s_Socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int)) != 0)
+    if (setsockopt(s_Socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int)) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return false;
     }
 
     if (bind(s_Socket, reinterpret_cast<const sockaddr *>(&address), sizeof(address)) == SOCKET_ERROR)
     {
-        Close();
-        CleanupSocket();
+        Shutdown();
         return false;
     }
 
@@ -199,16 +223,24 @@ void XbdmServerMock::SignalListening()
     s_Cond.notify_all();
 }
 
+void XbdmServerMock::StopListening()
+{
+    std::lock_guard<std::mutex> lock(s_Mutex);
+    s_Listening = false;
+    s_Cond.notify_all();
+}
+
 void XbdmServerMock::WaitForClientToRequestShutdown()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);
-    while (s_Listening)
-        s_Cond.wait(lock, []() { return !s_Listening; });
+    s_Cond.wait_for(lock, std::chrono::seconds(1), []() { return !s_Listening; });
 }
 
-void XbdmServerMock::Close()
+void XbdmServerMock::Shutdown()
 {
+    StopListening();
     CloseSocket(s_Socket);
+    Cleanup();
 
     s_Socket = INVALID_SOCKET;
 }
@@ -222,7 +254,7 @@ void XbdmServerMock::CloseSocket(SOCKET socket)
 #endif
 }
 
-void XbdmServerMock::CleanupSocket()
+void XbdmServerMock::Cleanup()
 {
 #ifdef _WIN32
     WSACleanup();

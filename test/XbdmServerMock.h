@@ -45,10 +45,11 @@ private:
     static std::mutex s_Mutex;
     static std::condition_variable s_Cond;
 
-    static bool Open();
+    static bool Start();
     static void SignalListening();
+    static void StopListening();
     static void WaitForClientToRequestShutdown();
-    static void Close();
+    static void Shutdown();
     static void CloseSocket(SOCKET socket);
-    static void CleanupSocket();
+    static void Cleanup();
 };
