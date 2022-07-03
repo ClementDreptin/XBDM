@@ -33,6 +33,7 @@ public:
     static void ConnectRespondAndShutdown();
     static void NoAccept();
     static void NoResponse();
+    static void PartialConnectResponse();
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();
