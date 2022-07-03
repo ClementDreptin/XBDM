@@ -34,7 +34,7 @@ Windows
     ```
     or, if you have `msbuild` in your `PATH`
     ```
-    msbuild /p:Configuration=<Debug|Release> .\build\OpenNeighborhood.sln
+    msbuild /p:Configuration=<debug|release> .\build\OpenNeighborhood.sln
     ```
 - Cygwin / MinGW
     ```
