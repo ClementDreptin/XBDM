@@ -17,6 +17,7 @@ int main()
         XBDM::Console console(TARGET_HOST);
         bool connectionSuccess = console.OpenConnection();
 
+        XbdmServerMock::SendRequestToShutdownServer();
         thread.join();
 
         TEST_EQ(connectionSuccess, true);

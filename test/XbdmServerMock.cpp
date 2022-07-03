@@ -30,6 +30,8 @@ void XbdmServerMock::ConnectRespondAndShutdown()
     if (clientSocket != INVALID_SOCKET)
         send(clientSocket, CONNECT_RESPONSE, static_cast<int>(strlen(CONNECT_RESPONSE)), 0);
 
+    WaitForClientToRequestShutdown();
+
     CloseSocket(clientSocket);
     Close();
     CleanupSocket();
@@ -40,6 +42,13 @@ void XbdmServerMock::WaitForServerToListen()
     std::unique_lock<std::mutex> lock(s_Mutex);
     while (!s_Listening)
         s_Cond.wait(lock, []() { return s_Listening; });
+}
+
+void XbdmServerMock::SendRequestToShutdownServer()
+{
+    std::lock_guard<std::mutex> lock(s_Mutex);
+    s_Listening = false;
+    s_Cond.notify_all();
 }
 
 bool XbdmServerMock::Open()
@@ -77,8 +86,6 @@ bool XbdmServerMock::Open()
         return false;
     }
 
-    s_Listening = true;
-
     return true;
 }
 
@@ -89,11 +96,17 @@ void XbdmServerMock::SignalListening()
     s_Cond.notify_all();
 }
 
+void XbdmServerMock::WaitForClientToRequestShutdown()
+{
+    std::unique_lock<std::mutex> lock(s_Mutex);
+    while (s_Listening)
+        s_Cond.wait(lock, []() { return !s_Listening; });
+}
+
 void XbdmServerMock::Close()
 {
     CloseSocket(s_Socket);
 
-    s_Listening = false;
     s_Socket = INVALID_SOCKET;
 }
 

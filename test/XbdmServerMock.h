@@ -27,7 +27,9 @@ public:
     XbdmServerMock() = delete;
 
     static void ConnectRespondAndShutdown();
+
     static void WaitForServerToListen();
+    static void SendRequestToShutdownServer();
 
 private:
     static SOCKET s_Socket;
@@ -37,6 +39,7 @@ private:
 
     static bool Open();
     static void SignalListening();
+    static void WaitForClientToRequestShutdown();
     static void Close();
     static void CloseSocket(SOCKET socket);
     static void CleanupSocket();
