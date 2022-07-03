@@ -6,14 +6,6 @@ SOCKET XbdmServerMock::s_ClientSocket = INVALID_SOCKET;
 std::mutex XbdmServerMock::s_Mutex;
 std::condition_variable XbdmServerMock::s_Cond;
 
-void XbdmServerMock::ConnectRespondAndShutdown()
-{
-    if (!StartClientConnection())
-        return;
-
-    ProcessShutdownRequest();
-}
-
 void XbdmServerMock::NoResponse()
 {
     if (!Start())
@@ -33,6 +25,14 @@ void XbdmServerMock::PartialConnectResponse()
         Shutdown();
         return;
     }
+
+    ProcessShutdownRequest();
+}
+
+void XbdmServerMock::ConnectRespondAndShutdown()
+{
+    if (!StartClientConnection())
+        return;
 
     ProcessShutdownRequest();
 }

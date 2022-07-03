@@ -30,9 +30,9 @@ class XbdmServerMock
 public:
     XbdmServerMock() = delete;
 
-    static void ConnectRespondAndShutdown();
     static void NoResponse();
     static void PartialConnectResponse();
+    static void ConnectRespondAndShutdown();
     static void ConsoleNameResponse();
 
     static void WaitForServerToListen();
