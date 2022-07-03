@@ -51,6 +51,4 @@ private:
     static void StopListening();
     static void ProcessShutdownRequest();
     static void Shutdown();
-    static void CloseSocket(SOCKET socket);
-    static void Cleanup();
 };

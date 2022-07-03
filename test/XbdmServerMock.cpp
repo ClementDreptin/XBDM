@@ -87,7 +87,7 @@ bool XbdmServerMock::Start()
     s_ServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s_ServerSocket == INVALID_SOCKET)
     {
-        Cleanup();
+        Shutdown();
         return false;
     }
 
@@ -159,6 +159,12 @@ void XbdmServerMock::ProcessShutdownRequest()
     Shutdown();
 }
 
+#ifdef _WIN32
+    #define CloseSocket(socket) closesocket(socket)
+#else
+    #define CloseSocket(socket) close(socket)
+#endif
+
 void XbdmServerMock::Shutdown()
 {
     if (s_Listening)
@@ -167,29 +173,15 @@ void XbdmServerMock::Shutdown()
     if (s_ServerSocket != INVALID_SOCKET)
     {
         CloseSocket(s_ServerSocket);
-        // s_ServerSocket = INVALID_SOCKET;
+        s_ServerSocket = INVALID_SOCKET;
     }
 
     if (s_ClientSocket != INVALID_SOCKET)
     {
         CloseSocket(s_ClientSocket);
-        // s_ClientSocket = INVALID_SOCKET;
+        s_ClientSocket = INVALID_SOCKET;
     }
 
-    Cleanup();
-}
-
-void XbdmServerMock::CloseSocket(SOCKET socket)
-{
-#ifdef _WIN32
-    closesocket(socket);
-#else
-    close(socket);
-#endif
-}
-
-void XbdmServerMock::Cleanup()
-{
 #ifdef _WIN32
     WSACleanup();
 #endif
