@@ -27,6 +27,7 @@ public:
     XbdmServerMock() = delete;
 
     static void ConnectRespondAndShutdown();
+    static void NoAccept();
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

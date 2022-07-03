@@ -37,6 +37,25 @@ void XbdmServerMock::ConnectRespondAndShutdown()
     CleanupSocket();
 }
 
+void XbdmServerMock::NoAccept()
+{
+    Open();
+
+    if (listen(s_Socket, 5) == SOCKET_ERROR)
+    {
+        Close();
+        CleanupSocket();
+        return;
+    }
+
+    SignalListening();
+
+    WaitForClientToRequestShutdown();
+
+    Close();
+    CleanupSocket();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);

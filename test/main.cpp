@@ -23,5 +23,18 @@ int main()
         TEST_EQ(connectionSuccess, true);
     });
 
+    runner.AddTest("Try to connect to the server but no accept", []() {
+        std::thread thread(XbdmServerMock::NoAccept);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, false);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }
