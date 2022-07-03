@@ -12,7 +12,7 @@ public:
     Console(const std::string &ipAddress);
 
     bool OpenConnection();
-    bool CloseConnection();
+    void CloseConnection();
 
     std::string GetName();
     std::vector<Drive> GetDrives();
@@ -37,14 +37,10 @@ private:
     std::string Receive();
     void SendCommand(const std::string &command);
 
-    std::vector<std::string> SplitResponse(const std::string &response, const std::string &delimiter);
-
-    DWORD GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex = true);
+    uint32_t GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex = true);
     std::string GetStringProperty(const std::string &line, const std::string &propertyName);
 
     void ClearSocket();
-    void CleanupSocket();
-    void CloseSocket();
 };
 
 }

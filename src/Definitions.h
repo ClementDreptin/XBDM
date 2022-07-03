@@ -4,15 +4,9 @@
 
 #ifndef _WIN32
 // clang-format off
-    typedef uint8_t BYTE;
-    typedef int16_t SHORT;
-    typedef uint16_t WORD;
-    typedef uint32_t DWORD;
-    typedef uint64_t UINT64;
     typedef int SOCKET;
 // clang-format on
 
-    #define ZeroMemory(buff, len) memset(buff, 0, len)
     #define INVALID_SOCKET -1
     #define SOCKET_ERROR -1
 #endif
@@ -23,17 +17,17 @@ namespace XBDM
 struct Drive
 {
     std::string Name;
-    UINT64 FreeBytesAvailable;
-    UINT64 TotalBytes;
-    UINT64 TotalFreeBytes;
-    UINT64 TotalUsedBytes;
+    uint64_t FreeBytesAvailable;
+    uint64_t TotalBytes;
+    uint64_t TotalFreeBytes;
+    uint64_t TotalUsedBytes;
     std::string FriendlyName;
 };
 
 struct File
 {
     std::string Name;
-    UINT64 Size;
+    uint64_t Size;
     bool IsXEX;
     bool IsDirectory;
 

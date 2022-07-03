@@ -14,5 +14,25 @@ bool String::EndsWith(const std::string &line, const std::string &ending)
     return std::equal(ending.rbegin(), ending.rend(), line.rbegin());
 }
 
+std::vector<std::string> String::Split(const std::string &string, const std::string &separator)
+{
+    std::vector<std::string> result;
+    std::string stringCopy = string;
+    size_t pos = 0;
+    std::string line;
+
+    while ((pos = stringCopy.find(separator)) != std::string::npos)
+    {
+        line = stringCopy.substr(0, pos);
+
+        if (line != ".")
+            result.push_back(line);
+
+        stringCopy.erase(0, pos + separator.length());
+    }
+
+    return result;
+}
+
 }
 }

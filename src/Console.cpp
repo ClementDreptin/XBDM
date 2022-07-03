@@ -23,7 +23,7 @@ bool Console::OpenConnection()
     m_Connected = false;
     addrinfo hints;
     addrinfo *addrInfo;
-    ZeroMemory(&hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
 
 #ifdef _WIN32
     WSADATA wsaData;
@@ -33,14 +33,14 @@ bool Console::OpenConnection()
 
     if (getaddrinfo(m_IpAddress.c_str(), "730", &hints, &addrInfo) != 0)
     {
-        CleanupSocket();
+        CloseConnection();
         return false;
     }
 
     m_Socket = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
     if (m_Socket < 0)
     {
-        CleanupSocket();
+        CloseConnection();
         return false;
     }
 
@@ -56,13 +56,13 @@ bool Console::OpenConnection()
 
     if (connect(m_Socket, addrInfo->ai_addr, static_cast<int>(addrInfo->ai_addrlen)) == SOCKET_ERROR)
     {
-        CloseSocket();
+        CloseConnection();
         return false;
     }
 
     if (m_Socket == INVALID_SOCKET)
     {
-        CleanupSocket();
+        CloseConnection();
         return false;
     }
 
@@ -73,13 +73,25 @@ bool Console::OpenConnection()
     return true;
 }
 
-bool Console::CloseConnection()
+#ifdef _WIN32
+    #define CloseSocket(socket) closesocket(socket)
+#else
+    #define CloseSocket(socket) close(socket)
+#endif
+
+void Console::CloseConnection()
 {
-    CloseSocket();
-    CleanupSocket();
+    if (m_Socket != INVALID_SOCKET)
+    {
+        CloseSocket(m_Socket);
+        m_Socket = INVALID_SOCKET;
+    }
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
 
     m_Connected = false;
-    return m_Socket == INVALID_SOCKET;
 }
 
 std::string Console::GetName()
@@ -111,7 +123,7 @@ std::vector<Drive> Console::GetDrives()
     if (listResponse[0] != '2')
         throw std::runtime_error("Couldn't get the drive list");
 
-    std::vector<std::string> lines = SplitResponse(listResponse, "\r\n");
+    std::vector<std::string> lines = Utils::String::Split(listResponse, "\r\n");
 
     // Delete the first line because it doesn't contain any info about the drives
     lines.erase(lines.begin());
@@ -154,9 +166,9 @@ std::vector<Drive> Console::GetDrives()
         // their upper 32 bits and the value of 'XXXlo' properties their lower 32 bits.
         try
         {
-            drive.FreeBytesAvailable = static_cast<UINT64>(GetIntegerProperty(spaceResponse, "freetocallerhi")) << 32 | static_cast<UINT64>(GetIntegerProperty(spaceResponse, "freetocallerlo"));
-            drive.TotalBytes = static_cast<UINT64>(GetIntegerProperty(spaceResponse, "totalbyteshi")) << 32 | static_cast<UINT64>(GetIntegerProperty(spaceResponse, "totalbyteslo"));
-            drive.TotalFreeBytes = static_cast<UINT64>(GetIntegerProperty(spaceResponse, "totalfreebyteshi")) << 32 | static_cast<UINT64>(GetIntegerProperty(spaceResponse, "totalfreebyteslo"));
+            drive.FreeBytesAvailable = static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "freetocallerhi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "freetocallerlo"));
+            drive.TotalBytes = static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "totalbyteshi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "totalbyteslo"));
+            drive.TotalFreeBytes = static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "totalfreebyteshi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(spaceResponse, "totalfreebyteslo"));
             drive.TotalUsedBytes = drive.TotalBytes - drive.FreeBytesAvailable;
 
             drives.push_back(drive);
@@ -183,7 +195,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
     if (contentResponse[0] != '2')
         throw std::invalid_argument("Invalid directory path: " + directoryPath);
 
-    std::vector<std::string> lines = SplitResponse(contentResponse, "\r\n");
+    std::vector<std::string> lines = Utils::String::Split(contentResponse, "\r\n");
 
     // Delete the first line because it doesn't contain any info about the files
     lines.erase(lines.begin());
@@ -208,7 +220,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
         try
         {
             file.Name = fileName;
-            file.Size = static_cast<UINT64>(GetIntegerProperty(line, "sizehi")) << 32 | static_cast<UINT64>(GetIntegerProperty(line, "sizelo"));
+            file.Size = static_cast<uint64_t>(GetIntegerProperty(line, "sizehi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "sizelo"));
             file.IsDirectory = Utils::String::EndsWith(line, " directory");
 
             std::filesystem::path filePath(file.Name);
@@ -230,7 +242,8 @@ void Console::LaunchXEX(const std::string &xexPath)
     std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
 
     SendCommand("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"");
-    std::string response = Receive();
+
+    ClearSocket();
 }
 
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
@@ -293,7 +306,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
         outFile.write(contentBuffer, bytes);
 
         // Reset contentBuffer
-        ZeroMemory(contentBuffer, sizeof(contentBuffer));
+        memset(contentBuffer, 0, sizeof(contentBuffer));
     }
 
     outFile.close();
@@ -358,14 +371,13 @@ void Console::SendFile(const std::string &remotePath, const std::string &localPa
 
         if (send(m_Socket, contentBuffer, static_cast<int>(file.gcount()), 0) == SOCKET_ERROR)
         {
-            CloseSocket();
-            CleanupSocket();
+            CloseConnection();
             file.close();
             throw std::runtime_error("Couldn't send the file");
         }
 
         // Reset contentBuffer
-        ZeroMemory(contentBuffer, sizeof(contentBuffer));
+        memset(contentBuffer, 0, sizeof(contentBuffer));
 
         // Give the Xbox 360 some time to process what was sent...
         std::this_thread::sleep_for(20ms);
@@ -451,36 +463,13 @@ void Console::SendCommand(const std::string &command)
 {
     std::string fullCommand = command + "\r\n";
     if (send(m_Socket, fullCommand.c_str(), static_cast<int>(fullCommand.length()), 0) == SOCKET_ERROR)
-    {
-        CloseSocket();
-        CleanupSocket();
-    }
+        CloseConnection();
 
     // Give the Xbox 360 some time to process the command and create a response...
     std::this_thread::sleep_for(10ms);
 }
 
-std::vector<std::string> Console::SplitResponse(const std::string &response, const std::string &delimiter)
-{
-    std::vector<std::string> result;
-    std::string responseCopy = response;
-    size_t pos = 0;
-    std::string line;
-
-    while ((pos = responseCopy.find(delimiter)) != std::string::npos)
-    {
-        line = responseCopy.substr(0, pos);
-
-        if (line != ".")
-            result.push_back(line);
-
-        responseCopy.erase(0, pos + delimiter.length());
-    }
-
-    return result;
-}
-
-DWORD Console::GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex)
+uint32_t Console::GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex)
 {
     if (line.find(propertyName) == std::string::npos)
         throw std::runtime_error(std::string("Property '" + propertyName + "' not found").c_str());
@@ -491,7 +480,7 @@ DWORD Console::GetIntegerProperty(const std::string &line, const std::string &pr
     size_t crIndex = line.find('\r', startIndex);
     size_t endIndex = (spaceIndex != std::string::npos) ? spaceIndex : crIndex;
 
-    DWORD toReturn;
+    uint32_t toReturn;
     if (hex)
         std::istringstream(line.substr(startIndex, endIndex - startIndex)) >> std::hex >> toReturn;
     else
@@ -517,25 +506,9 @@ std::string Console::GetStringProperty(const std::string &line, const std::strin
 void Console::ClearSocket()
 {
     char buffer[s_PacketSize] = { 0 };
-    while (recv(m_Socket, buffer, sizeof(buffer), 0) != SOCKET_ERROR)
-        ;
-}
-
-void Console::CleanupSocket()
-{
-#ifdef _WIN32
-    WSACleanup();
-#endif
-}
-
-void Console::CloseSocket()
-{
-#ifdef _WIN32
-    closesocket(m_Socket);
-#else
-    close(m_Socket);
-#endif
-    m_Socket = INVALID_SOCKET;
+    while (recv(m_Socket, buffer, s_PacketSize, 0) > 0)
+    {
+    }
 }
 
 }
