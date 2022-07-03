@@ -31,7 +31,6 @@ public:
     XbdmServerMock() = delete;
 
     static void ConnectRespondAndShutdown();
-    static void NoAccept();
     static void NoResponse();
     static void PartialConnectResponse();
     static void ConsoleNameResponse();
@@ -40,15 +39,17 @@ public:
     static void SendRequestToShutdownServer();
 
 private:
-    static SOCKET s_Socket;
+    static SOCKET s_ServerSocket;
+    static SOCKET s_ClientSocket;
     static bool s_Listening;
     static std::mutex s_Mutex;
     static std::condition_variable s_Cond;
 
     static bool Start();
+    static bool StartClientConnection();
     static void SignalListening();
     static void StopListening();
-    static void WaitForClientToRequestShutdown();
+    static void ProcessShutdownRequest();
     static void Shutdown();
     static void CloseSocket(SOCKET socket);
     static void Cleanup();
