@@ -1,6 +1,8 @@
 #include "XbdmServerMock.h"
 
 #include <sstream>
+#include <array>
+#include <string>
 
 bool XbdmServerMock::s_Listening = false;
 SOCKET XbdmServerMock::s_ServerSocket = INVALID_SOCKET;
