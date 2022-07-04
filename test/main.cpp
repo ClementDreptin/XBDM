@@ -71,5 +71,26 @@ int main()
         TEST_EQ(consoleName, "TestXDK");
     });
 
+    runner.AddTest("Get drive list", []() {
+        std::thread thread(XbdmServerMock::DriveResponse);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+
+        std::vector<XBDM::Drive> drives = console.GetDrives();
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(drives.size(), 1);
+        TEST_EQ(drives[0].Name, "HDD");
+        TEST_EQ(drives[0].FriendlyName, "Retail Hard Drive Emulation (HDD:)");
+        TEST_EQ(drives[0].FreeBytesAvailable, 10);
+        TEST_EQ(drives[0].TotalBytes, 11);
+        TEST_EQ(drives[0].TotalFreeBytes, 12);
+        TEST_EQ(drives[0].TotalUsedBytes, 1);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }

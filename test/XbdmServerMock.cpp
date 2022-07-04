@@ -43,7 +43,7 @@ void XbdmServerMock::ConsoleNameResponse()
         return;
 
     char requestBuffer[1024] = { 0 };
-    int received = recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
     if (strcmp(requestBuffer, "dbgname\r\n") != 0)
     {
         Shutdown();
@@ -52,6 +52,45 @@ void XbdmServerMock::ConsoleNameResponse()
 
     const char *consoleNameResponse = "200- TestXDK\r\n";
     if (send(s_ClientSocket, consoleNameResponse, static_cast<int>(strlen(consoleNameResponse)), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
+    }
+
+    ProcessShutdownRequest();
+}
+
+void XbdmServerMock::DriveResponse()
+{
+    if (!StartClientConnection())
+        return;
+
+    char requestBuffer[1024] = { 0 };
+    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    if (strcmp(requestBuffer, "drivelist\r\n") != 0)
+    {
+        Shutdown();
+        return;
+    }
+
+    const char *driveResponse = "202- multiline response follows\r\ndrivename=\"HDD\"\r\n.\r\n";
+    if (send(s_ClientSocket, driveResponse, static_cast<int>(strlen(driveResponse)), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
+    }
+
+    memset(requestBuffer, 0, sizeof(requestBuffer));
+
+    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    if (strcmp(requestBuffer, "drivefreespace name=\"HDD:\\\"\r\n") != 0)
+    {
+        Shutdown();
+        return;
+    }
+
+    const char *hddSpaceResponse = "200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
+    if (send(s_ClientSocket, hddSpaceResponse, static_cast<int>(strlen(hddSpaceResponse)), 0) == SOCKET_ERROR)
     {
         Shutdown();
         return;

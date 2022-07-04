@@ -34,6 +34,7 @@ public:
     static void PartialConnectResponse();
     static void ConnectRespondAndShutdown();
     static void ConsoleNameResponse();
+    static void DriveResponse();
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();
