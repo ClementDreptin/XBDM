@@ -1,5 +1,7 @@
 #include "XbdmServerMock.h"
 
+#include <sstream>
+
 bool XbdmServerMock::s_Listening = false;
 SOCKET XbdmServerMock::s_ServerSocket = INVALID_SOCKET;
 SOCKET XbdmServerMock::s_ClientSocket = INVALID_SOCKET;
@@ -73,8 +75,16 @@ void XbdmServerMock::DriveResponse()
         return;
     }
 
-    const char *driveResponse = "202- multiline response follows\r\ndrivename=\"HDD\"\r\n.\r\n";
-    if (send(s_ClientSocket, driveResponse, static_cast<int>(strlen(driveResponse)), 0) == SOCKET_ERROR)
+    std::array<std::string, 2> driveNames = { "HDD", "Z" };
+    std::stringstream driveResponse;
+    driveResponse << "202- multiline response follows\r\n";
+
+    for (auto &driveName : driveNames)
+        driveResponse << "drivename=\"" << driveName << "\"\r\n";
+
+    driveResponse << ".\r\n";
+
+    if (send(s_ClientSocket, driveResponse.str().c_str(), static_cast<int>(driveResponse.str().size()), 0) == SOCKET_ERROR)
     {
         Shutdown();
         return;
@@ -82,18 +92,26 @@ void XbdmServerMock::DriveResponse()
 
     memset(requestBuffer, 0, sizeof(requestBuffer));
 
-    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
-    if (strcmp(requestBuffer, "drivefreespace name=\"HDD:\\\"\r\n") != 0)
+    for (auto &driveName : driveNames)
     {
-        Shutdown();
-        return;
-    }
+        std::stringstream command;
+        command << "drivefreespace name=\"" << driveName << ":\\\"\r\n";
 
-    const char *hddSpaceResponse = "200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
-    if (send(s_ClientSocket, hddSpaceResponse, static_cast<int>(strlen(hddSpaceResponse)), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
-        return;
+        recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+        if (requestBuffer != command.str())
+        {
+            Shutdown();
+            return;
+        }
+
+        const char *driveSpaceResponse = "200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
+        if (send(s_ClientSocket, driveSpaceResponse, static_cast<int>(strlen(driveSpaceResponse)), 0) == SOCKET_ERROR)
+        {
+            Shutdown();
+            return;
+        }
+
+        memset(requestBuffer, 0, sizeof(requestBuffer));
     }
 
     ProcessShutdownRequest();

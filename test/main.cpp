@@ -83,13 +83,21 @@ int main()
         XbdmServerMock::SendRequestToShutdownServer();
         thread.join();
 
-        TEST_EQ(drives.size(), 1);
+        TEST_EQ(drives.size(), 2);
+
         TEST_EQ(drives[0].Name, "HDD");
         TEST_EQ(drives[0].FriendlyName, "Retail Hard Drive Emulation (HDD:)");
         TEST_EQ(drives[0].FreeBytesAvailable, 10);
         TEST_EQ(drives[0].TotalBytes, 11);
         TEST_EQ(drives[0].TotalFreeBytes, 12);
         TEST_EQ(drives[0].TotalUsedBytes, 1);
+
+        TEST_EQ(drives[1].Name, "Z");
+        TEST_EQ(drives[1].FriendlyName, "Devkit Drive (Z:)");
+        TEST_EQ(drives[1].FreeBytesAvailable, 10);
+        TEST_EQ(drives[1].TotalBytes, 11);
+        TEST_EQ(drives[1].TotalFreeBytes, 12);
+        TEST_EQ(drives[1].TotalUsedBytes, 1);
     });
 
     return runner.RunTests() ? 0 : 1;
