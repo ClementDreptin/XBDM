@@ -45,7 +45,12 @@ void XbdmServerMock::ConsoleNameResponse()
         return;
 
     char requestBuffer[1024] = { 0 };
-    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
+    }
+
     if (strcmp(requestBuffer, "dbgname\r\n") != 0)
     {
         Shutdown();
@@ -68,7 +73,12 @@ void XbdmServerMock::DriveResponse()
         return;
 
     char requestBuffer[1024] = { 0 };
-    recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
+    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
+    }
+
     if (strcmp(requestBuffer, "drivelist\r\n") != 0)
     {
         Shutdown();
@@ -94,11 +104,15 @@ void XbdmServerMock::DriveResponse()
 
     for (auto &driveName : driveNames)
     {
-        std::stringstream command;
-        command << "drivefreespace name=\"" << driveName << ":\\\"\r\n";
+        std::string command = "drivefreespace name=\"" + driveName + ":\\\"\r\n";
 
-        recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0);
-        if (requestBuffer != command.str())
+        if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
+        {
+            Shutdown();
+            return;
+        }
+
+        if (requestBuffer != command)
         {
             Shutdown();
             return;
@@ -112,6 +126,40 @@ void XbdmServerMock::DriveResponse()
         }
 
         memset(requestBuffer, 0, sizeof(requestBuffer));
+    }
+
+    ProcessShutdownRequest();
+}
+
+void XbdmServerMock::DirectoryContentsResponse(const std::string &directoryPath)
+{
+    if (!StartClientConnection())
+        return;
+
+    char requestBuffer[1024] = { 0 };
+    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
+    }
+
+    std::string expectedCommand = "dirlist name=\"" + directoryPath + "\"\r\n";
+    if (requestBuffer != expectedCommand)
+    {
+        Shutdown();
+        return;
+    }
+
+    const char *response =
+        "202- multiline response follows\r\n"
+        "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
+        "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
+        "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
+        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n";
+    if (send(s_ClientSocket, response, static_cast<int>(strlen(response)), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return;
     }
 
     ProcessShutdownRequest();

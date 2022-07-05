@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <string>
 
 #ifdef _WIN32
     #include <WinSock2.h>
@@ -35,6 +36,7 @@ public:
     static void ConnectRespondAndShutdown();
     static void ConsoleNameResponse();
     static void DriveResponse();
+    static void DirectoryContentsResponse(const std::string &directoryPath);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();
