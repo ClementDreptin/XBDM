@@ -28,7 +28,7 @@ std::vector<std::string> String::Split(const std::string &string, const std::str
         if (line != ".")
             result.push_back(line);
 
-        stringCopy.erase(0, pos + separator.length());
+        stringCopy.erase(0, pos + separator.size());
     }
 
     return result;

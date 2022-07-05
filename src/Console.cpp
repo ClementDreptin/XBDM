@@ -99,13 +99,13 @@ std::string Console::GetName()
     SendCommand("dbgname");
     std::string response = Receive();
 
-    if (response.length() <= 5)
+    if (response.size() <= 5)
         throw std::runtime_error("Response length too short");
 
     if (response[0] != '2')
         throw std::runtime_error("Couldn't get the console name");
 
-    std::string result = response.substr(5, response.length() - 7);
+    std::string result = response.substr(5, response.size() - 7);
 
     return result;
 }
@@ -117,7 +117,7 @@ std::vector<Drive> Console::GetDrives()
     SendCommand("drivelist");
     std::string listResponse = Receive();
 
-    if (listResponse.length() <= 4)
+    if (listResponse.size() <= 4)
         throw std::runtime_error("Response length too short");
 
     if (listResponse[0] != '2')
@@ -189,7 +189,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
     SendCommand("dirlist name=\"" + directoryPath + "\"");
     std::string contentResponse = Receive();
 
-    if (contentResponse.length() <= 4)
+    if (contentResponse.size() <= 4)
         throw std::runtime_error("Response length too short");
 
     if (contentResponse[0] != '2')
@@ -254,7 +254,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     SendCommand("getfile name=\"" + remotePath + "\"");
 
     // Receive the header
-    if (recv(m_Socket, headerBuffer, static_cast<int>(header.length()), 0) == SOCKET_ERROR)
+    if (recv(m_Socket, headerBuffer, static_cast<int>(header.size()), 0) == SOCKET_ERROR)
         throw std::runtime_error("Couldn't receive the response header");
 
     if (strlen(headerBuffer) <= 4)
@@ -339,7 +339,7 @@ void Console::SendFile(const std::string &remotePath, const std::string &localPa
     SendCommand(command.str());
 
     // Receive the header
-    if (recv(m_Socket, headerBuffer, static_cast<int>(header.length()), 0) == SOCKET_ERROR)
+    if (recv(m_Socket, headerBuffer, static_cast<int>(header.size()), 0) == SOCKET_ERROR)
         throw std::runtime_error("Couldn't receive the response header");
 
     if (strlen(headerBuffer) <= 4)
@@ -402,7 +402,7 @@ void Console::DeleteFile(const std::string &path, bool isDirectory)
     SendCommand("delete name=\"" + path + '\"' + (isDirectory ? " dir" : ""));
     std::string response = Receive();
 
-    if (response.length() <= 4)
+    if (response.size() <= 4)
         throw std::runtime_error("Response length too short");
 
     if (response[0] != '2')
@@ -414,7 +414,7 @@ void Console::CreateDirectory(const std::string &path)
     SendCommand("mkdir name=\"" + path + "\"");
     std::string response = Receive();
 
-    if (response.length() <= 4)
+    if (response.size() <= 4)
         throw std::runtime_error("Response length too short");
 
     if (response.substr(0, 3) == "410")
@@ -429,7 +429,7 @@ void Console::RenameFile(const std::string &oldName, const std::string &newName)
     SendCommand("rename name=\"" + oldName + "\" newname=\"" + newName + "\"");
     std::string response = Receive();
 
-    if (response.length() <= 4)
+    if (response.size() <= 4)
         throw std::runtime_error("Response length too short");
 
     if (response[0] != '2')
@@ -453,7 +453,7 @@ std::string Console::Receive()
     // Sometimes the response ends but we still receive some stuff.
     // If that's the case, we want to remove everything after ".\r\n".
     size_t endPos = result.find(".\r\n");
-    if (endPos != std::string::npos && result.substr(result.length() - 3, 3) != ".\r\n")
+    if (endPos != std::string::npos && result.substr(result.size() - 3, 3) != ".\r\n")
         result = result.substr(0, endPos);
 
     return result;
@@ -462,7 +462,7 @@ std::string Console::Receive()
 void Console::SendCommand(const std::string &command)
 {
     std::string fullCommand = command + "\r\n";
-    if (send(m_Socket, fullCommand.c_str(), static_cast<int>(fullCommand.length()), 0) == SOCKET_ERROR)
+    if (send(m_Socket, fullCommand.c_str(), static_cast<int>(fullCommand.size()), 0) == SOCKET_ERROR)
         CloseConnection();
 
     // Give the Xbox 360 some time to process the command and create a response...
@@ -472,7 +472,7 @@ void Console::SendCommand(const std::string &command)
 uint32_t Console::GetIntegerProperty(const std::string &line, const std::string &propertyName, bool hex)
 {
     if (line.find(propertyName) == std::string::npos)
-        throw std::runtime_error(std::string("Property '" + propertyName + "' not found").c_str());
+        throw std::runtime_error("Property '" + propertyName + "' not found");
 
     // All integer properties are like this: NAME=VALUE
     size_t startIndex = line.find(propertyName) + propertyName.size() + 1;
@@ -492,7 +492,7 @@ uint32_t Console::GetIntegerProperty(const std::string &line, const std::string 
 std::string Console::GetStringProperty(const std::string &line, const std::string &propertyName)
 {
     if (line.find(propertyName) == std::string::npos)
-        throw std::runtime_error(std::string("Property '" + propertyName + "' not found").c_str());
+        throw std::runtime_error("Property '" + propertyName + "' not found");
 
     // All string properties are like this: NAME="VALUE"
     size_t startIndex = line.find(propertyName) + propertyName.size() + 2;

@@ -23,12 +23,8 @@ void XbdmServerMock::PartialConnectResponse()
     if (!Start())
         return;
 
-    const char *partialConnectResponse = "201";
-    if (send(s_ClientSocket, partialConnectResponse, static_cast<int>(strlen(partialConnectResponse)), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+    if (!Send("201"))
         return;
-    }
 
     ProcessShutdownRequest();
 }
@@ -46,25 +42,11 @@ void XbdmServerMock::ConsoleNameResponse()
     if (!StartClientConnection())
         return;
 
-    char requestBuffer[1024] = { 0 };
-    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+    if (!CheckRequest("dbgname\r\n"))
         return;
-    }
 
-    if (strcmp(requestBuffer, "dbgname\r\n") != 0)
-    {
-        Shutdown();
+    if (!Send("200- TestXDK\r\n"))
         return;
-    }
-
-    const char *consoleNameResponse = "200- TestXDK\r\n";
-    if (send(s_ClientSocket, consoleNameResponse, static_cast<int>(strlen(consoleNameResponse)), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
-        return;
-    }
 
     ProcessShutdownRequest();
 }
@@ -74,18 +56,8 @@ void XbdmServerMock::DriveResponse()
     if (!StartClientConnection())
         return;
 
-    char requestBuffer[1024] = { 0 };
-    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+    if (!CheckRequest("drivelist\r\n"))
         return;
-    }
-
-    if (strcmp(requestBuffer, "drivelist\r\n") != 0)
-    {
-        Shutdown();
-        return;
-    }
 
     std::array<std::string, 2> driveNames = { "HDD", "Z" };
     std::stringstream driveResponse;
@@ -96,38 +68,16 @@ void XbdmServerMock::DriveResponse()
 
     driveResponse << ".\r\n";
 
-    if (send(s_ClientSocket, driveResponse.str().c_str(), static_cast<int>(driveResponse.str().size()), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+    if (!Send(driveResponse.str()))
         return;
-    }
-
-    memset(requestBuffer, 0, sizeof(requestBuffer));
 
     for (auto &driveName : driveNames)
     {
-        std::string command = "drivefreespace name=\"" + driveName + ":\\\"\r\n";
-
-        if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
-        {
-            Shutdown();
+        if (!CheckRequest("drivefreespace name=\"" + driveName + ":\\\"\r\n"))
             return;
-        }
 
-        if (requestBuffer != command)
-        {
-            Shutdown();
+        if (!Send("200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n"))
             return;
-        }
-
-        const char *driveSpaceResponse = "200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
-        if (send(s_ClientSocket, driveSpaceResponse, static_cast<int>(strlen(driveSpaceResponse)), 0) == SOCKET_ERROR)
-        {
-            Shutdown();
-            return;
-        }
-
-        memset(requestBuffer, 0, sizeof(requestBuffer));
     }
 
     ProcessShutdownRequest();
@@ -138,19 +88,8 @@ void XbdmServerMock::DirectoryContentsResponse(const std::string &directoryPath)
     if (!StartClientConnection())
         return;
 
-    char requestBuffer[1024] = { 0 };
-    if (recv(s_ClientSocket, requestBuffer, sizeof(requestBuffer), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+    if (!CheckRequest("dirlist name=\"" + directoryPath + "\"\r\n"))
         return;
-    }
-
-    std::string expectedCommand = "dirlist name=\"" + directoryPath + "\"\r\n";
-    if (requestBuffer != expectedCommand)
-    {
-        Shutdown();
-        return;
-    }
 
     const char *response =
         "202- multiline response follows\r\n"
@@ -158,11 +97,9 @@ void XbdmServerMock::DirectoryContentsResponse(const std::string &directoryPath)
         "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
         "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
         "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n";
-    if (send(s_ClientSocket, response, static_cast<int>(strlen(response)), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
+
+    if (!Send(response))
         return;
-    }
 
     ProcessShutdownRequest();
 }
@@ -234,8 +171,34 @@ bool XbdmServerMock::StartClientConnection()
     if (!Start())
         return false;
 
-    const char *connectResponse = "201- connected\r\n";
-    if (send(s_ClientSocket, connectResponse, static_cast<int>(strlen(connectResponse)), 0) == SOCKET_ERROR)
+    return Send("201- connected\r\n");
+}
+
+bool XbdmServerMock::Send(const std::string &response)
+{
+    const size_t chunkSize = 16;
+
+    for (size_t i = 0; i < response.size(); i += chunkSize)
+    {
+        if (send(s_ClientSocket, response.c_str() + i, static_cast<int>(chunkSize), 0) == SOCKET_ERROR)
+        {
+            Shutdown();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool XbdmServerMock::CheckRequest(const std::string &expectedCommand)
+{
+    std::string result;
+    char buffer[1024] = { 0 };
+
+    if (recv(s_ClientSocket, buffer, sizeof(buffer) - 1, 0) > 0)
+        result += buffer;
+
+    if (result != expectedCommand)
     {
         Shutdown();
         return false;

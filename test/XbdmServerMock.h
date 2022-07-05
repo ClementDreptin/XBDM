@@ -50,6 +50,8 @@ private:
 
     static bool Start();
     static bool StartClientConnection();
+    static bool Send(const std::string &response);
+    static bool CheckRequest(const std::string &expectedCommand);
     static void SignalListening();
     static void StopListening();
     static void ProcessShutdownRequest();
