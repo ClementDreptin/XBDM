@@ -1,3 +1,5 @@
+[![Build and test](https://github.com/ClementDreptin/XBDM/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/ClementDreptin/XBDM/actions/workflows/build-and-test.yml)
+
 # XBDM
 Cross-platform client for the XBDM protocol used by development versions of the Xbox 360.
 
