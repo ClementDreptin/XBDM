@@ -104,6 +104,22 @@ void XbdmServerMock::DirectoryContentsResponse(const std::string &directoryPath)
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::MagicBoot(const std::string &xexPath)
+{
+    if (!StartClientConnection())
+        return;
+
+    std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
+
+    if (!CheckRequest("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"\r\n"))
+        return;
+
+    if (!Send("200- OK\r\n"))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);

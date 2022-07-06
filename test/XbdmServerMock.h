@@ -37,6 +37,7 @@ public:
     static void ConsoleNameResponse();
     static void DriveResponse();
     static void DirectoryContentsResponse(const std::string &directoryPath);
+    static void MagicBoot(const std::string &xexPath);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

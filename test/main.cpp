@@ -142,5 +142,18 @@ int main()
         TEST_EQ(file4->IsXEX, true);
     });
 
+    runner.AddTest("Start XEX", []() {
+        std::string xexPath = "Hdd:\\Path\\To\\Game\\default.xex";
+        std::thread thread(XbdmServerMock::MagicBoot, xexPath);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.LaunchXEX(xexPath);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+    });
+
     return runner.RunTests() ? 0 : 1;
 }
