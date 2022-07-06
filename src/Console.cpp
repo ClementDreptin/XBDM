@@ -448,6 +448,9 @@ std::string Console::Receive()
         // Give the Xbox 360 some time to notice we received something...
         std::this_thread::sleep_for(10ms);
         result += buffer;
+
+        // Reset buffer
+        memset(buffer, 0, s_PacketSize);
     }
 
     // Sometimes the response ends but we still receive some stuff.
