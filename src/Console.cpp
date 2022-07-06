@@ -224,7 +224,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
             file.IsDirectory = Utils::String::EndsWith(line, " directory");
 
             std::filesystem::path filePath(file.Name);
-            file.IsXEX = filePath.extension() == ".xex";
+            file.IsXex = filePath.extension() == ".xex";
 
             files.emplace(file);
         }
@@ -237,7 +237,7 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
     return files;
 }
 
-void Console::LaunchXEX(const std::string &xexPath)
+void Console::LaunchXex(const std::string &xexPath)
 {
     std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
 

@@ -18,7 +18,7 @@ public:
     std::vector<Drive> GetDrives();
     std::set<File> GetDirectoryContents(const std::string &directoryPath);
 
-    void LaunchXEX(const std::string &xexPath);
+    void LaunchXex(const std::string &xexPath);
 
     void ReceiveFile(const std::string &remotePath, const std::string &localPath);
     void SendFile(const std::string &remotePath, const std::string &localPath);

@@ -28,7 +28,7 @@ struct File
 {
     std::string Name;
     uint64_t Size;
-    bool IsXEX;
+    bool IsXex;
     bool IsDirectory;
 
     bool operator<(const File &other) const

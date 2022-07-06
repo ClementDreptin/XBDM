@@ -121,25 +121,25 @@ int main()
         TEST_EQ(file1->Name, "dir1");
         TEST_EQ(file1->Size, 0);
         TEST_EQ(file1->IsDirectory, true);
-        TEST_EQ(file1->IsXEX, false);
+        TEST_EQ(file1->IsXex, false);
 
         auto file2 = std::next(files.begin(), 1);
         TEST_EQ(file2->Name, "dir2");
         TEST_EQ(file2->Size, 0);
         TEST_EQ(file2->IsDirectory, true);
-        TEST_EQ(file2->IsXEX, false);
+        TEST_EQ(file2->IsXex, false);
 
         auto file3 = std::next(files.begin(), 2);
         TEST_EQ(file3->Name, "file1.txt");
         TEST_EQ(file3->Size, 10);
         TEST_EQ(file3->IsDirectory, false);
-        TEST_EQ(file3->IsXEX, false);
+        TEST_EQ(file3->IsXex, false);
 
         auto file4 = std::next(files.begin(), 3);
         TEST_EQ(file4->Name, "file2.xex");
         TEST_EQ(file4->Size, 11);
         TEST_EQ(file4->IsDirectory, false);
-        TEST_EQ(file4->IsXEX, true);
+        TEST_EQ(file4->IsXex, true);
     });
 
     runner.AddTest("Start XEX", []() {
@@ -149,7 +149,7 @@ int main()
 
         XBDM::Console console(TARGET_HOST);
         bool connectionSuccess = console.OpenConnection();
-        console.LaunchXEX(xexPath);
+        console.LaunchXex(xexPath);
 
         XbdmServerMock::SendRequestToShutdownServer();
         thread.join();
