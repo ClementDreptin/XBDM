@@ -168,7 +168,7 @@ int main()
 
         XBDM::Console console(TARGET_HOST);
         bool connectionSuccess = console.OpenConnection();
-        console.ReceiveFile(pathOnServer, pathOnClient);
+        console.ReceiveFile(pathOnServer.string(), pathOnClient.string());
 
         XbdmServerMock::SendRequestToShutdownServer();
         thread.join();

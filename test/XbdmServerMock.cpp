@@ -142,7 +142,7 @@ void XbdmServerMock::ReceiveFile(const std::string &pathOnServer)
 
     // Get the file size
     inFile.seekg(0, inFile.end);
-    int fileSize = inFile.tellg();
+    int fileSize = static_cast<int>(inFile.tellg());
     inFile.seekg(0, inFile.beg);
 
     // Start building the response
@@ -264,8 +264,8 @@ bool XbdmServerMock::Send(const char *buffer, size_t length)
     // Send data in chunks of 16 bytes at most to simulate packets
     for (size_t i = 0; i < length; i += chunkSize)
     {
-        int toSend = std::min(chunkSize, length - totalSent);
-        if ((sent = send(s_ClientSocket, buffer + i, toSend, 0)) == SOCKET_ERROR)
+        size_t toSend = std::min<size_t>(chunkSize, length - totalSent);
+        if ((sent = send(s_ClientSocket, buffer + i, static_cast<int>(toSend), 0)) == SOCKET_ERROR)
         {
             Shutdown();
             return false;
