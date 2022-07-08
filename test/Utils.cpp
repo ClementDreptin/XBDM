@@ -26,27 +26,37 @@ fs::path GetFixtureDir()
 
     fs::path execFilePath(path);
 
-    return execFilePath.parent_path().parent_path().parent_path().parent_path().append("test").append("fixtures");
+    return execFilePath
+        .parent_path() // <debug|release>
+        .parent_path() // bin
+        .parent_path() // build
+        .parent_path() // XBDM
+        .append("test")
+        .append("fixtures");
 }
 
 bool CompareFiles(const fs::path &pathToFirstFile, const fs::path &pathToSecondFile)
 {
-    std::ifstream f1(pathToFirstFile, std::ifstream::binary | std::ifstream::ate);
-    std::ifstream f2(pathToSecondFile, std::ifstream::binary | std::ifstream::ate);
+    std::ifstream firstFile(pathToFirstFile, std::ifstream::binary | std::ifstream::ate);
+    std::ifstream secondFile(pathToSecondFile, std::ifstream::binary | std::ifstream::ate);
 
-    if (f1.fail() || f2.fail())
+    // Make sure that files can be opened
+    if (firstFile.fail() || secondFile.fail())
         return false;
 
-    if (f1.tellg() != f2.tellg())
+    // Compare the file sizes
+    if (firstFile.tellg() != secondFile.tellg())
         return false;
 
-    f1.seekg(0, std::ifstream::beg);
-    f2.seekg(0, std::ifstream::beg);
+    // Go back to the beginning of both files
+    firstFile.seekg(0, std::ifstream::beg);
+    secondFile.seekg(0, std::ifstream::beg);
 
+    // Compare the file contents
     return std::equal(
-        std::istreambuf_iterator<char>(f1.rdbuf()),
+        std::istreambuf_iterator<char>(firstFile.rdbuf()),
         std::istreambuf_iterator<char>(),
-        std::istreambuf_iterator<char>(f2.rdbuf())
+        std::istreambuf_iterator<char>(secondFile.rdbuf())
     );
 }
 

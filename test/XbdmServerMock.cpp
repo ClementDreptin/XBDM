@@ -32,7 +32,7 @@ void XbdmServerMock::PartialConnectResponse()
     ProcessShutdownRequest();
 }
 
-void XbdmServerMock::ConnectRespondAndShutdown()
+void XbdmServerMock::ConnectResponse()
 {
     if (!StartClientConnection())
         return;
@@ -62,18 +62,20 @@ void XbdmServerMock::DriveResponse()
     if (!CheckRequest("drivelist\r\n"))
         return;
 
+    // Build the response with the drive names and send it
     std::array<std::string, 2> driveNames = { "HDD", "Z" };
-    std::stringstream driveResponse;
-    driveResponse << "202- multiline response follows\r\n";
+    std::stringstream response;
+    response << "202- multiline response follows\r\n";
 
     for (auto &driveName : driveNames)
-        driveResponse << "drivename=\"" << driveName << "\"\r\n";
+        response << "drivename=\"" << driveName << "\"\r\n";
 
-    driveResponse << ".\r\n";
+    response << ".\r\n";
 
-    if (!Send(driveResponse.str()))
+    if (!Send(response.str()))
         return;
 
+    // For each drive, expect a request to get the space information and send some dummy values
     for (auto &driveName : driveNames)
     {
         if (!CheckRequest("drivefreespace name=\"" + driveName + ":\\\"\r\n"))
@@ -94,7 +96,7 @@ void XbdmServerMock::DirectoryContentsResponse(const std::string &directoryPath)
     if (!CheckRequest("dirlist name=\"" + directoryPath + "\"\r\n"))
         return;
 
-    const char *response =
+    std::string response =
         "202- multiline response follows\r\n"
         "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
         "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
@@ -112,9 +114,9 @@ void XbdmServerMock::MagicBoot(const std::string &xexPath)
     if (!StartClientConnection())
         return;
 
-    std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
+    std::string directoryPath = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
 
-    if (!CheckRequest("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"\r\n"))
+    if (!CheckRequest("magicboot title=\"" + xexPath + "\" directory=\"" + directoryPath + "\"\r\n"))
         return;
 
     if (!Send("200- OK\r\n"))
@@ -131,32 +133,41 @@ void XbdmServerMock::ReceiveFile(const std::string &pathOnServer)
     if (!CheckRequest("getfile name=\"" + pathOnServer + "\"\r\n"))
         return;
 
+    // Open the requested file
     std::ifstream inFile;
     inFile.open(pathOnServer, std::ifstream::binary);
 
     if (inFile.fail())
         return;
 
-    std::string responseHeader = "203- binary response follows\r\n";
-
+    // Get the file size
     inFile.seekg(0, inFile.end);
     int fileSize = inFile.tellg();
     inFile.seekg(0, inFile.beg);
 
+    // Start building the response
     std::vector<char> response;
-    response.reserve(responseHeader.size() + sizeof(fileSize) + fileSize);
+    std::string header = "203- binary response follows\r\n";
 
-    response.insert(response.end(), responseHeader.begin(), responseHeader.end());
+    // The final response will contain the header, a 32-bit integer for the file size and the file content
+    // so we preallocate enough memory for that
+    response.reserve(header.size() + sizeof(fileSize) + fileSize);
+
+    // Append the header and the file size to the response
+    response.insert(response.end(), header.begin(), header.end());
     response.insert(response.end(), reinterpret_cast<const char *>(&fileSize), reinterpret_cast<const char *>(&fileSize) + sizeof(fileSize));
 
+    // Buffer to hold file chunks while reading it
     char buffer[256] = { 0 };
 
     while (!inFile.eof())
     {
         inFile.read(buffer, sizeof(buffer));
 
+        // Append the current chunk to the response
         response.insert(response.end(), buffer, buffer + inFile.gcount());
 
+        // Reset the buffer
         memset(buffer, 0, sizeof(buffer));
     }
 
@@ -168,13 +179,16 @@ void XbdmServerMock::ReceiveFile(const std::string &pathOnServer)
 
 void XbdmServerMock::WaitForServerToListen()
 {
+    // Wait to get ownership of the mutex
     std::unique_lock<std::mutex> lock(s_Mutex);
+
+    // Wait for s_Cond to be notified that the server started listening with a timeout of one second
     s_Cond.wait_for(lock, std::chrono::seconds(1), []() { return s_Listening; });
 }
 
 void XbdmServerMock::SendRequestToShutdownServer()
 {
-    StopListening();
+    SignalListening(false);
 }
 
 bool XbdmServerMock::Start()
@@ -216,7 +230,7 @@ bool XbdmServerMock::Start()
         return false;
     }
 
-    SignalListening();
+    SignalListening(true);
 
     s_ClientSocket = accept(s_ServerSocket, static_cast<sockaddr *>(nullptr), static_cast<socklen_t *>(nullptr));
     if (s_ClientSocket == INVALID_SOCKET)
@@ -247,6 +261,7 @@ bool XbdmServerMock::Send(const char *buffer, size_t length)
     int sent = 0;
     int totalSent = 0;
 
+    // Send data in chunks of 16 bytes at most to simulate packets
     for (size_t i = 0; i < length; i += chunkSize)
     {
         int toSend = std::min(chunkSize, length - totalSent);
@@ -279,23 +294,22 @@ bool XbdmServerMock::CheckRequest(const std::string &expectedCommand)
     return true;
 }
 
-void XbdmServerMock::SignalListening()
+void XbdmServerMock::SignalListening(bool isListening)
 {
+    // Wait to get ownership of the mutex
     std::lock_guard<std::mutex> lock(s_Mutex);
-    s_Listening = true;
-    s_Cond.notify_all();
-}
 
-void XbdmServerMock::StopListening()
-{
-    std::lock_guard<std::mutex> lock(s_Mutex);
-    s_Listening = false;
+    // Notify s_Cond that the server started or stopped listening
+    s_Listening = isListening;
     s_Cond.notify_all();
 }
 
 void XbdmServerMock::ProcessShutdownRequest()
 {
+    // Wait to get ownership of the mutex
     std::unique_lock<std::mutex> lock(s_Mutex);
+
+    // Wait for s_Cond to be notified that the server stopped listening with a timeout of one second
     s_Cond.wait_for(lock, std::chrono::seconds(1), []() { return !s_Listening; });
 
     Shutdown();
@@ -310,7 +324,7 @@ void XbdmServerMock::ProcessShutdownRequest()
 void XbdmServerMock::Shutdown()
 {
     if (s_Listening)
-        StopListening();
+        SignalListening(false);
 
     if (s_ServerSocket != INVALID_SOCKET)
     {

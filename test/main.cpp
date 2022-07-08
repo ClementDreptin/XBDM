@@ -46,8 +46,8 @@ int main()
         TEST_EQ(connectionSuccess, false);
     });
 
-    runner.AddTest("Connect to socket and shutdown right after", []() {
-        std::thread thread(XbdmServerMock::ConnectRespondAndShutdown);
+    runner.AddTest("Connect to server and received connection response", []() {
+        std::thread thread(XbdmServerMock::ConnectResponse);
         XbdmServerMock::WaitForServerToListen();
 
         XBDM::Console console(TARGET_HOST);

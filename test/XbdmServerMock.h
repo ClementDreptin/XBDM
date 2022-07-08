@@ -33,7 +33,7 @@ public:
 
     static void NoResponse();
     static void PartialConnectResponse();
-    static void ConnectRespondAndShutdown();
+    static void ConnectResponse();
     static void ConsoleNameResponse();
     static void DriveResponse();
     static void DirectoryContentsResponse(const std::string &directoryPath);
@@ -55,8 +55,7 @@ private:
     static bool Send(const std::string &response);
     static bool Send(const char *buffer, size_t length);
     static bool CheckRequest(const std::string &expectedCommand);
-    static void SignalListening();
-    static void StopListening();
+    static void SignalListening(bool isListening);
     static void ProcessShutdownRequest();
     static void Shutdown();
 };
