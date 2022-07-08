@@ -299,7 +299,10 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     while (totalBytes < fileSize)
     {
         if ((bytes = recv(m_Socket, contentBuffer, sizeof(contentBuffer), 0)) == SOCKET_ERROR)
+        {
+            outFile.close();
             throw std::runtime_error("Couldn't receive the file");
+        }
 
         totalBytes += bytes;
 
@@ -308,6 +311,9 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
         // Reset contentBuffer
         memset(contentBuffer, 0, sizeof(contentBuffer));
     }
+
+    // Give write permission to the group (only effective on POSIX systems)
+    std::filesystem::permissions(localPath, std::filesystem::perms::group_write, std::filesystem::perm_options::add);
 
     outFile.close();
 
