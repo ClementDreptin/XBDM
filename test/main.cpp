@@ -1,10 +1,13 @@
 #include "TestRunner.h"
 #include "XBDM.h"
 #include "XbdmServerMock.h"
+#include "Utils.h"
 
 #include <thread>
 
 #define TARGET_HOST "127.0.0.1"
+
+namespace fs = std::filesystem;
 
 int main()
 {
@@ -153,6 +156,29 @@ int main()
 
         XbdmServerMock::SendRequestToShutdownServer();
         thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
+    runner.AddTest("Receive file", []() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("fileOnServer.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("fileOnClient.txt");
+        std::thread thread(XbdmServerMock::ReceiveFile, pathOnServer.string());
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.ReceiveFile(pathOnServer, pathOnClient);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+
+        TEST_EQ(fs::exists(pathOnClient), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
+
+        fs::remove(pathOnClient);
     });
 
     return runner.RunTests() ? 0 : 1;

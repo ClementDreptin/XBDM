@@ -3,6 +3,9 @@
 #include <sstream>
 #include <array>
 #include <string>
+#include <filesystem>
+#include <fstream>
+#include <vector>
 
 bool XbdmServerMock::s_Listening = false;
 SOCKET XbdmServerMock::s_ServerSocket = INVALID_SOCKET;
@@ -120,6 +123,49 @@ void XbdmServerMock::MagicBoot(const std::string &xexPath)
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::ReceiveFile(const std::string &pathOnServer)
+{
+    if (!StartClientConnection())
+        return;
+
+    if (!CheckRequest("getfile name=\"" + pathOnServer + "\"\r\n"))
+        return;
+
+    std::ifstream inFile;
+    inFile.open(pathOnServer, std::ifstream::binary);
+
+    if (inFile.fail())
+        return;
+
+    std::string responseHeader = "203- binary response follows\r\n";
+
+    inFile.seekg(0, inFile.end);
+    int fileSize = inFile.tellg();
+    inFile.seekg(0, inFile.beg);
+
+    std::vector<char> response;
+    response.reserve(responseHeader.size() + sizeof(fileSize) + fileSize);
+
+    response.insert(response.end(), responseHeader.begin(), responseHeader.end());
+    response.insert(response.end(), reinterpret_cast<const char *>(&fileSize), reinterpret_cast<const char *>(&fileSize) + sizeof(fileSize));
+
+    char buffer[256] = { 0 };
+
+    while (!inFile.eof())
+    {
+        inFile.read(buffer, sizeof(buffer));
+
+        response.insert(response.end(), buffer, buffer + inFile.gcount());
+
+        memset(buffer, 0, sizeof(buffer));
+    }
+
+    if (!Send(response.data(), response.size()))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     std::unique_lock<std::mutex> lock(s_Mutex);
@@ -192,15 +238,25 @@ bool XbdmServerMock::StartClientConnection()
 
 bool XbdmServerMock::Send(const std::string &response)
 {
-    const size_t chunkSize = 16;
+    return Send(response.c_str(), response.size());
+}
 
-    for (size_t i = 0; i < response.size(); i += chunkSize)
+bool XbdmServerMock::Send(const char *buffer, size_t length)
+{
+    const size_t chunkSize = 16;
+    int sent = 0;
+    int totalSent = 0;
+
+    for (size_t i = 0; i < length; i += chunkSize)
     {
-        if (send(s_ClientSocket, response.c_str() + i, static_cast<int>(chunkSize), 0) == SOCKET_ERROR)
+        int toSend = std::min(chunkSize, length - totalSent);
+        if ((sent = send(s_ClientSocket, buffer + i, toSend, 0)) == SOCKET_ERROR)
         {
             Shutdown();
             return false;
         }
+
+        totalSent += sent;
     }
 
     return true;

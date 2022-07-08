@@ -38,6 +38,7 @@ public:
     static void DriveResponse();
     static void DirectoryContentsResponse(const std::string &directoryPath);
     static void MagicBoot(const std::string &xexPath);
+    static void ReceiveFile(const std::string &pathOnServer);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();
@@ -52,6 +53,7 @@ private:
     static bool Start();
     static bool StartClientConnection();
     static bool Send(const std::string &response);
+    static bool Send(const char *buffer, size_t length);
     static bool CheckRequest(const std::string &expectedCommand);
     static void SignalListening();
     static void StopListening();
