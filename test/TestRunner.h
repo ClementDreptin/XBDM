@@ -13,15 +13,20 @@
 class TestRunner
 {
     using TestFunction = void (*)();
+    using TestCase = std::pair<const char *, TestFunction>;
 
 public:
     TestRunner() = default;
 
     void AddTest(const char *testName, TestFunction testFunction);
+    bool RunOnly(const char *testName, TestFunction testFunction);
     bool RunTests();
 
 private:
     size_t m_PassingTests = 0;
     size_t m_FailingTests = 0;
-    std::vector<std::pair<const char *, TestFunction>> m_TestCases;
+    std::vector<TestCase> m_TestCases;
+
+    void Run(const TestCase &testCase);
+    void DisplayRecap();
 };
