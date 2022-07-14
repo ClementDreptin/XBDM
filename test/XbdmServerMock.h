@@ -40,6 +40,7 @@ public:
     static void MagicBoot(const std::string &xexPath);
     static void ReceiveFile(const std::string &pathOnServer);
     static void SendFile(const std::string &pathOnServer, const std::string &pathOnClient);
+    static void DeleteFile(const std::string &path, bool isDirectory);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

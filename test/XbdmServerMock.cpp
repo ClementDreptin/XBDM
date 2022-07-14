@@ -238,6 +238,45 @@ void XbdmServerMock::SendFile(const std::string &pathOnServer, const std::string
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::DeleteFile(const std::string &path, bool isDirectory)
+{
+    if (!StartClientConnection())
+        return;
+
+    if (isDirectory)
+    {
+        if (!CheckRequest("dirlist name=\"" + path + "\"\r\n"))
+            return;
+
+        std::stringstream response;
+        std::array<std::string, 2> files = { "file1.txt", "file2.txt" };
+        response << "202- multiline response follows\r\n";
+
+        for (auto &file : files)
+            response << "name=\"" << file << "\" sizehi=0x0 sizelo=0xa\r\n";
+
+        if (!Send(response.str()))
+            return;
+
+        for (auto &file : files)
+        {
+            if (!CheckRequest("delete name=\"" + path + '\\' + file + "\"\r\n"))
+                return;
+
+            if (!Send("200- OK\r\n"))
+                return;
+        }
+    }
+
+    if (!CheckRequest("delete name=\"" + path + '\"' + (isDirectory ? " dir" : "") + "\r\n"))
+        return;
+
+    if (!Send("200- OK\r\n"))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     // Wait to get ownership of the mutex

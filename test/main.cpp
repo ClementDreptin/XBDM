@@ -202,5 +202,35 @@ int main()
         fs::remove(pathOnServer);
     });
 
+    runner.AddTest("Delete file", []() {
+        std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
+        std::thread thread(XbdmServerMock::DeleteFile, fakePath, false);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.DeleteFile(fakePath, false);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
+    runner.AddTest("Delete directory", []() {
+        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
+        std::thread thread(XbdmServerMock::DeleteFile, fakePath, true);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.DeleteFile(fakePath, true);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }
