@@ -445,7 +445,7 @@ void Console::RenameFile(const std::string &oldName, const std::string &newName)
 
 std::string Console::Receive()
 {
-    std::string result;
+    std::stringstream stream;
     char buffer[s_PacketSize] = { 0 };
 
     // We only receive s_PacketSize - 1 bytes to make sure the last byte
@@ -454,11 +454,13 @@ std::string Console::Receive()
     {
         // Give the Xbox 360 some time to notice we received something...
         std::this_thread::sleep_for(10ms);
-        result += buffer;
+        stream << buffer;
 
         // Reset buffer
         memset(buffer, 0, s_PacketSize);
     }
+
+    std::string result = stream.str();
 
     // Sometimes the response ends but we still receive some stuff.
     // If that's the case, we want to remove everything after ".\r\n".
