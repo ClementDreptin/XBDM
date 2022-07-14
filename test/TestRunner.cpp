@@ -11,7 +11,7 @@ bool TestRunner::RunOnly(const char *testName, TestFunction testFunction)
 
     DisplayRecap();
 
-    return m_FailingTests > 0;
+    return m_FailingTests == 0;
 }
 
 bool TestRunner::RunTests()
@@ -21,7 +21,7 @@ bool TestRunner::RunTests()
 
     DisplayRecap();
 
-    return m_FailingTests > 0;
+    return m_FailingTests == 0;
 }
 
 void TestRunner::Run(const TestCase &testCase)
