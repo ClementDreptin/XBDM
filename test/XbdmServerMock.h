@@ -39,6 +39,7 @@ public:
     static void DirectoryContentsResponse(const std::string &directoryPath);
     static void MagicBoot(const std::string &xexPath);
     static void ReceiveFile(const std::string &pathOnServer);
+    static void SendFile(const std::string &pathOnServer, const std::string &pathOnClient);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

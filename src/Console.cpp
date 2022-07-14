@@ -296,6 +296,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
         throw std::runtime_error("Invalid local path: " + localPath);
     }
 
+    // Receive the content of the file from the server and write it to the file on the client
     while (totalBytes < fileSize)
     {
         if ((bytes = recv(m_Socket, contentBuffer, sizeof(contentBuffer), 0)) == SOCKET_ERROR)
@@ -339,10 +340,10 @@ void Console::SendFile(const std::string &remotePath, const std::string &localPa
     command << "sendfile name=\"" << remotePath << "\" ";
     command << "length=0x" << std::hex << fileSize << "\r\n";
 
+    SendCommand(command.str());
+
     char headerBuffer[40] = { 0 };
     std::string header = "204- send binary data\r\n";
-
-    SendCommand(command.str());
 
     // Receive the header
     if (recv(m_Socket, headerBuffer, static_cast<int>(header.size()), 0) == SOCKET_ERROR)

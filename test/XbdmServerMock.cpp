@@ -177,6 +177,67 @@ void XbdmServerMock::ReceiveFile(const std::string &pathOnServer)
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::SendFile(const std::string &pathOnServer, const std::string &pathOnClient)
+{
+    if (!StartClientConnection())
+        return;
+
+    std::ifstream file;
+    file.open(pathOnClient, std::ifstream::binary);
+
+    // Get the size of the file the client is supposed to send
+    file.seekg(0, file.end);
+    size_t fileSize = file.tellg();
+    file.seekg(0, file.beg);
+
+    // Create the command the client is supposed to send
+    std::stringstream command;
+    command << "sendfile name=\"" << pathOnServer << "\" ";
+    command << "length=0x" << std::hex << fileSize << "\r\n\r\n";
+
+    if (!CheckRequest(command.str()))
+        return;
+
+    // Tell the client to start sending the file content
+    if (!Send("204- send binary data\r\n"))
+        return;
+
+    // Create the file on the server
+    std::ofstream outFile;
+    outFile.open(pathOnServer, std::ofstream::binary);
+
+    if (outFile.fail())
+        return;
+
+    int bytes = 0;
+    int totalBytes = 0;
+    char contentBuffer[256] = { 0 };
+
+    // Receive the content of the file from the client and write it to the file on the server
+    while (totalBytes < fileSize)
+    {
+        if ((bytes = recv(s_ClientSocket, contentBuffer, sizeof(contentBuffer), 0)) == SOCKET_ERROR)
+        {
+            outFile.close();
+            return;
+        }
+
+        totalBytes += bytes;
+
+        outFile.write(contentBuffer, bytes);
+
+        // Reset contentBuffer
+        memset(contentBuffer, 0, sizeof(contentBuffer));
+    }
+
+    outFile.close();
+
+    if (!Send("200- OK\r\n"))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     // Wait to get ownership of the mutex
