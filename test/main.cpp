@@ -232,5 +232,20 @@ int main()
         TEST_EQ(connectionSuccess, true);
     });
 
+    runner.AddTest("Create directory", []() {
+        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
+        std::thread thread(XbdmServerMock::CreateDirectory, fakePath);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.CreateDirectory(fakePath);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }

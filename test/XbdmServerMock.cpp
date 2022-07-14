@@ -277,6 +277,20 @@ void XbdmServerMock::DeleteFile(const std::string &path, bool isDirectory)
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::CreateDirectory(const std::string &path)
+{
+    if (!StartClientConnection())
+        return;
+
+    if (!CheckRequest("mkdir name=\"" + path + "\"\r\n"))
+        return;
+
+    if (!Send("200- OK\r\n"))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     // Wait to get ownership of the mutex
