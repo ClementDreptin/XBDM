@@ -247,5 +247,21 @@ int main()
         TEST_EQ(connectionSuccess, true);
     });
 
+    runner.AddTest("Rename file", []() {
+        std::string fakeOldPath = "Hdd:\\Fake\\Old\\Path";
+        std::string fakeNewPath = "Hdd:\\Fake\\New\\Path";
+        std::thread thread(XbdmServerMock::RenameFile, fakeOldPath, fakeNewPath);
+        XbdmServerMock::WaitForServerToListen();
+
+        XBDM::Console console(TARGET_HOST);
+        bool connectionSuccess = console.OpenConnection();
+        console.RenameFile(fakeOldPath, fakeNewPath);
+
+        XbdmServerMock::SendRequestToShutdownServer();
+        thread.join();
+
+        TEST_EQ(connectionSuccess, true);
+    });
+
     return runner.RunTests() ? 0 : 1;
 }

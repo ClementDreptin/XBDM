@@ -42,6 +42,7 @@ public:
     static void SendFile(const std::string &pathOnServer, const std::string &pathOnClient);
     static void DeleteFile(const std::string &path, bool isDirectory);
     static void CreateDirectory(const std::string &path);
+    static void RenameFile(const std::string &oldName, const std::string &newName);
 
     static void WaitForServerToListen();
     static void SendRequestToShutdownServer();

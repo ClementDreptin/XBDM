@@ -291,6 +291,20 @@ void XbdmServerMock::CreateDirectory(const std::string &path)
     ProcessShutdownRequest();
 }
 
+void XbdmServerMock::RenameFile(const std::string &oldName, const std::string &newName)
+{
+    if (!StartClientConnection())
+        return;
+
+    if (!CheckRequest("rename name=\"" + oldName + "\" newname=\"" + newName + "\"\r\n"))
+        return;
+
+    if (!Send("200- OK\r\n"))
+        return;
+
+    ProcessShutdownRequest();
+}
+
 void XbdmServerMock::WaitForServerToListen()
 {
     // Wait to get ownership of the mutex
