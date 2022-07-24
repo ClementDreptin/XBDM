@@ -142,24 +142,24 @@ std::vector<Drive> Console::GetDrives()
         }
 
         Drive drive;
-        drive.Name = driveName;
+        drive.Name = driveName += ':';
 
         // Get the friendly name for volume, these are from neighborhood
-        if (drive.Name == "DEVKIT" || drive.Name == "E")
-            drive.FriendlyName = "Game Development Volume (" + drive.Name + ":)";
-        else if (drive.Name == "HDD")
-            drive.FriendlyName = "Retail Hard Drive Emulation (" + drive.Name + ":)";
-        else if (drive.Name == "Y")
-            drive.FriendlyName = "Xbox360 Dashboard Volume (" + drive.Name + ":)";
-        else if (drive.Name == "Z")
-            drive.FriendlyName = "Devkit Drive (" + drive.Name + ":)";
-        else if (drive.Name == "D" || drive.Name == "GAME")
-            drive.FriendlyName = "Active Title Media (" + drive.Name + ":)";
+        if (drive.Name == "DEVKIT:" || drive.Name == "E:")
+            drive.FriendlyName = "Game Development Volume (" + drive.Name + ")";
+        else if (drive.Name == "HDD:")
+            drive.FriendlyName = "Retail Hard Drive Emulation (" + drive.Name + ")";
+        else if (drive.Name == "Y:")
+            drive.FriendlyName = "Xbox360 Dashboard Volume (" + drive.Name + ")";
+        else if (drive.Name == "Z:")
+            drive.FriendlyName = "Devkit Drive (" + drive.Name + ")";
+        else if (drive.Name == "D:" || drive.Name == "GAME:")
+            drive.FriendlyName = "Active Title Media (" + drive.Name + ")";
         else
-            drive.FriendlyName = "Volume (" + drive.Name + ":)";
+            drive.FriendlyName = "Volume (" + drive.Name + ")";
 
         // Get the free space for each drive
-        SendCommand("drivefreespace name=\"" + drive.Name + ":\\\"");
+        SendCommand("drivefreespace name=\"" + drive.Name + "\\\"");
         std::string spaceResponse = Receive();
 
         // Create 64-bit unsigned integers and making the value of 'XXXhi' properties
