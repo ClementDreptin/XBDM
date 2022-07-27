@@ -31,6 +31,7 @@ public:
 private:
     bool m_Connected = false;
     std::string m_IpAddress;
+    std::string m_Name;
     SOCKET m_Socket;
     static const int s_PacketSize = 2048;
 

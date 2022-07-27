@@ -96,6 +96,10 @@ void Console::CloseConnection()
 
 std::string Console::GetName()
 {
+    // If the console name has already been requested, just sent what was cached last time
+    if (!m_Name.empty())
+        return m_Name;
+
     SendCommand("dbgname");
     std::string response = Receive();
 
@@ -105,9 +109,12 @@ std::string Console::GetName()
     if (response[0] != '2')
         throw std::runtime_error("Couldn't get the console name");
 
-    std::string result = response.substr(5, response.size() - 7);
+    // The response is "200- <name>\r\n"
+    // We don't want the first 5 characters ("200- ") nor the last 2 ("\r\n") so the console name
+    // starts at index 5 and is of size response.size() - the first 5 characters - the last 2 characters
+    m_Name = response.substr(5, response.size() - 7);
 
-    return result;
+    return m_Name;
 }
 
 std::vector<Drive> Console::GetDrives()
