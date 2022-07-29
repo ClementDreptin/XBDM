@@ -18,6 +18,11 @@ Console::Console(const std::string &ipAddress)
 {
 }
 
+Console::~Console()
+{
+    CloseConnection();
+}
+
 bool Console::OpenConnection()
 {
     m_Connected = false;

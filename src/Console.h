@@ -10,6 +10,7 @@ class Console
 public:
     Console();
     Console(const std::string &ipAddress);
+    ~Console();
 
     bool OpenConnection();
     void CloseConnection();
