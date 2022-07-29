@@ -14,7 +14,7 @@ public:
     bool OpenConnection();
     void CloseConnection();
 
-    std::string GetName();
+    const std::string &GetName();
     std::vector<Drive> GetDrives();
     std::set<File> GetDirectoryContents(const std::string &directoryPath);
 
@@ -26,7 +26,9 @@ public:
     void CreateDirectory(const std::string &path);
     void RenameFile(const std::string &oldName, const std::string &newName);
 
-    bool IsConnected() { return m_Connected; }
+    inline bool IsConnected() { return m_Connected; }
+
+    inline const std::string &GetIpAddress() const { return m_IpAddress; }
 
 private:
     bool m_Connected = false;

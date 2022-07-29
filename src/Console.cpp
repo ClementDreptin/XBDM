@@ -94,7 +94,7 @@ void Console::CloseConnection()
     m_Connected = false;
 }
 
-std::string Console::GetName()
+const std::string &Console::GetName()
 {
     // If the console name has already been requested, just sent what was cached last time
     if (!m_Name.empty())
