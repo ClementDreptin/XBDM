@@ -21,6 +21,13 @@ std::vector<std::string> String::Split(const std::string &string, const std::str
     size_t pos = 0;
     std::string line;
 
+    // If separator is not in stringCopy, just return a vector only containing stringCopy
+    if (stringCopy.find(separator) == std::string::npos)
+    {
+        result.push_back(stringCopy);
+        return result;
+    }
+
     while ((pos = stringCopy.find(separator)) != std::string::npos)
     {
         line = stringCopy.substr(0, pos);

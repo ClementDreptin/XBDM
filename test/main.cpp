@@ -3,6 +3,8 @@
 #include "XbdmServerMock.h"
 #include "Utils.h"
 
+#include "TestServer.h"
+
 #include <thread>
 
 #define TARGET_HOST "127.0.0.1"
@@ -11,70 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    TestRunner runner;
-
-    runner.AddTest("Try to connect while server is not running", []() {
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-
-        TEST_EQ(connectionSuccess, false);
-    });
-
-    runner.AddTest("Connect to server but no response", []() {
-        std::thread thread(XbdmServerMock::NoResponse);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, false);
-    });
-
-    runner.AddTest("Connect to server but only received partial response", []() {
-        std::thread thread(XbdmServerMock::PartialConnectResponse);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, false);
-    });
-
-    runner.AddTest("Connect to server and received connection response", []() {
-        std::thread thread(XbdmServerMock::ConnectResponse);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-    });
-
-    runner.AddTest("Get console name", []() {
-        std::thread thread(XbdmServerMock::ConsoleNameResponse);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        std::string consoleName = console.GetName();
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-        TEST_EQ(consoleName, "TestXDK");
-    });
-
-    runner.AddTest("Get drive list", []() {
+    /* runner.AddTest("Get drive list", []() {
         std::thread thread(XbdmServerMock::DriveResponse);
         XbdmServerMock::WaitForServerToListen();
 
@@ -261,7 +200,30 @@ int main()
         thread.join();
 
         TEST_EQ(connectionSuccess, true);
+    }); */
+
+    TestServer server;
+    TestRunner runner;
+
+    std::thread thread(std::bind(&TestServer::Start, &server));
+    server.WaitForServerToListen();
+
+    XBDM::Console console(TARGET_HOST);
+    bool connectionSuccess = console.OpenConnection();
+
+    runner.AddTest("Connect to server", [&]() {
+        TEST_EQ(connectionSuccess, true);
     });
 
-    return runner.RunTests() ? 0 : 1;
+    runner.AddTest("Get console name", [&]() {
+        std::string consoleName = console.GetName();
+
+        TEST_EQ(consoleName, "TestXDK");
+    });
+
+    bool finalResult = runner.RunTests();
+    server.RequestShutdown();
+    thread.join();
+
+    return static_cast<int>(!finalResult);
 }
