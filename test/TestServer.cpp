@@ -1,11 +1,15 @@
 #include "TestServer.h"
 
+#include <sstream>
+
 #include "../src/Utils.h"
 
 TestServer::TestServer()
     : m_ServerSocket(INVALID_SOCKET), m_ClientSocket(INVALID_SOCKET), m_Listening(false)
 {
     m_CommandMap["dbgname"] = std::bind(&TestServer::ConsoleName, this, std::placeholders::_1);
+    m_CommandMap["drivelist"] = std::bind(&TestServer::DriveList, this, std::placeholders::_1);
+    m_CommandMap["drivefreespace"] = std::bind(&TestServer::DriveFreeSpace, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -49,9 +53,29 @@ void TestServer::RequestShutdown()
     SignalListening(false);
 }
 
-void TestServer::ConsoleName(const std::vector<Arg> &args)
+void TestServer::ConsoleName(const std::vector<Arg> &)
 {
     Send("200- TestXDK\r\n");
+}
+
+void TestServer::DriveList(const std::vector<Arg> &)
+{
+    // Build the response with the drive names and send it
+    std::array<std::string, 2> driveNames = { "HDD", "Z" };
+    std::stringstream response;
+    response << "202- multiline response follows\r\n";
+
+    for (auto &driveName : driveNames)
+        response << "drivename=\"" << driveName << "\"\r\n";
+
+    response << ".\r\n";
+
+    Send(response.str());
+}
+
+void TestServer::DriveFreeSpace(const std::vector<Arg> &)
+{
+    Send("200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n");
 }
 
 bool TestServer::InitServerSocket()

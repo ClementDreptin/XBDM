@@ -202,6 +202,7 @@ int main()
         TEST_EQ(connectionSuccess, true);
     }); */
 
+    // Set the testing environment up
     TestServer server;
     TestRunner runner;
 
@@ -211,6 +212,7 @@ int main()
     XBDM::Console console(TARGET_HOST);
     bool connectionSuccess = console.OpenConnection();
 
+    // The tests
     runner.AddTest("Connect to server", [&]() {
         TEST_EQ(connectionSuccess, true);
     });
@@ -221,6 +223,27 @@ int main()
         TEST_EQ(consoleName, "TestXDK");
     });
 
+    runner.AddTest("Get drive list", [&]() {
+        std::vector<XBDM::Drive> drives = console.GetDrives();
+
+        TEST_EQ(drives.size(), 2);
+
+        TEST_EQ(drives[0].Name, "HDD:");
+        TEST_EQ(drives[0].FriendlyName, "Retail Hard Drive Emulation (HDD:)");
+        TEST_EQ(drives[0].FreeBytesAvailable, 10);
+        TEST_EQ(drives[0].TotalBytes, 11);
+        TEST_EQ(drives[0].TotalFreeBytes, 12);
+        TEST_EQ(drives[0].TotalUsedBytes, 1);
+
+        TEST_EQ(drives[1].Name, "Z:");
+        TEST_EQ(drives[1].FriendlyName, "Devkit Drive (Z:)");
+        TEST_EQ(drives[1].FreeBytesAvailable, 10);
+        TEST_EQ(drives[1].TotalBytes, 11);
+        TEST_EQ(drives[1].TotalFreeBytes, 12);
+        TEST_EQ(drives[1].TotalUsedBytes, 1);
+    });
+
+    // Running the tests and shuting down the server
     bool finalResult = runner.RunTests();
     server.RequestShutdown();
     thread.join();

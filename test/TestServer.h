@@ -20,9 +20,7 @@
 #ifdef _WIN32
 // clang-format off
     typedef int socklen_t;
-// clang-format on
 #else
-// clang-format off
     typedef int SOCKET;
 // clang-format on
 
@@ -49,7 +47,9 @@ private:
 
     struct Arg;
 
-    void ConsoleName(const std::vector<Arg> &args);
+    void ConsoleName(const std::vector<Arg> &);
+    void DriveList(const std::vector<Arg> &);
+    void DriveFreeSpace(const std::vector<Arg> &);
 
     bool InitServerSocket();
     bool InitClientSocket();
