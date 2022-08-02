@@ -56,7 +56,7 @@ void TestServer::RequestShutdown()
 
 void TestServer::ConsoleName(const std::vector<Arg> &)
 {
-    Send("200- TestXDK\r\n");
+    Send("200- TestXDK");
 }
 
 void TestServer::DriveList(const std::vector<Arg> &)
@@ -69,7 +69,7 @@ void TestServer::DriveList(const std::vector<Arg> &)
     for (auto &driveName : driveNames)
         response << "drivename=\"" << driveName << "\"\r\n";
 
-    response << ".\r\n";
+    response << '.';
 
     Send(response.str());
 }
@@ -80,7 +80,7 @@ void TestServer::DriveFreeSpace(const std::vector<Arg> &)
         "200- "
         "freetocallerhi=0x0 freetocallerlo=0xa "
         "totalbyteshi=0x0 totalbyteslo=0xb "
-        "totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
+        "totalfreebyteshi=0x0 totalfreebyteslo=0xc";
 
     Send(response);
 }
@@ -92,7 +92,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &)
         "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
         "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
         "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
-        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n";
+        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n.";
 
     Send(response);
 }
@@ -201,6 +201,14 @@ bool TestServer::Send(const char *buffer, size_t length)
         }
 
         totalSent += sent;
+    }
+
+    // Send the new line character to mark the end of the response
+    const char *responseEnd = "\r\n";
+    if (send(m_ClientSocket, responseEnd, static_cast<int>(strlen(responseEnd)), 0) == SOCKET_ERROR)
+    {
+        Shutdown();
+        return false;
     }
 
     return true;
