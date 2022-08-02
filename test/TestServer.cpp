@@ -246,11 +246,11 @@ bool TestServer::Send(const std::string &response)
 
 bool TestServer::Send(const char *buffer, size_t length)
 {
-    const size_t chunkSize = 16;
+    const size_t chunkSize = 32;
     int sent = 0;
     int totalSent = 0;
 
-    // Send data in chunks of 16 bytes at most to simulate packets
+    // Send data in chunks of 32 bytes at most to simulate packets
     for (size_t i = 0; i < length; i += chunkSize)
     {
         size_t toSend = std::min<size_t>(chunkSize, length - totalSent);
