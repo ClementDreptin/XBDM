@@ -47,10 +47,10 @@ private:
 
     struct Arg;
 
-    void ConsoleName(const std::vector<Arg> &);
-    void DriveList(const std::vector<Arg> &);
-    void DriveFreeSpace(const std::vector<Arg> &);
-    void DirectoryContents(const std::vector<Arg> &);
+    void ConsoleName(const std::vector<Arg> &args);
+    void DriveList(const std::vector<Arg> &args);
+    void DriveFreeSpace(const std::vector<Arg> &args);
+    void DirectoryContents(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();

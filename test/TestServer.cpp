@@ -27,7 +27,7 @@ void TestServer::Start()
         return;
     }
 
-    if (!Send("201- connected\r\n"))
+    if (!Send("201- connected"))
     {
         Shutdown();
         return;
@@ -54,13 +54,25 @@ void TestServer::RequestShutdown()
     SignalListening(false);
 }
 
-void TestServer::ConsoleName(const std::vector<Arg> &)
+void TestServer::ConsoleName(const std::vector<Arg> &args)
 {
+    if (!args.empty())
+    {
+        Send("400- no argument expected");
+        return;
+    }
+
     Send("200- TestXDK");
 }
 
-void TestServer::DriveList(const std::vector<Arg> &)
+void TestServer::DriveList(const std::vector<Arg> &args)
 {
+    if (!args.empty())
+    {
+        Send("400- no argument expected");
+        return;
+    }
+
     // Build the response with the drive names and send it
     std::array<std::string, 2> driveNames = { "HDD", "Z" };
     std::stringstream response;
@@ -74,8 +86,20 @@ void TestServer::DriveList(const std::vector<Arg> &)
     Send(response.str());
 }
 
-void TestServer::DriveFreeSpace(const std::vector<Arg> &)
+void TestServer::DriveFreeSpace(const std::vector<Arg> &args)
 {
+    if (args.size() != 1)
+    {
+        Send("400- more than one argument provided");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found");
+        return;
+    }
+
     std::string response =
         "200- "
         "freetocallerhi=0x0 freetocallerlo=0xa "
@@ -85,8 +109,20 @@ void TestServer::DriveFreeSpace(const std::vector<Arg> &)
     Send(response);
 }
 
-void TestServer::DirectoryContents(const std::vector<Arg> &)
+void TestServer::DirectoryContents(const std::vector<Arg> &args)
 {
+    if (args.size() != 1)
+    {
+        Send("400- more than one argument provided");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found");
+        return;
+    }
+
     std::string response =
         "202- multiline response follows\r\n"
         "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
