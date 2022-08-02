@@ -142,6 +142,9 @@ std::vector<Drive> Console::GetDrives()
 
     for (auto &line : lines)
     {
+        if (line.empty() || line == ".")
+            continue;
+
         std::string driveName;
 
         try
@@ -214,6 +217,9 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
 
     for (auto &line : lines)
     {
+        if (line.empty() || line == ".")
+            continue;
+
         std::string fileName;
 
         try
