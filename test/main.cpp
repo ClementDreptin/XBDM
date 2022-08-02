@@ -13,22 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Start XEX", []() {
-        std::string xexPath = "Hdd:\\Path\\To\\Game\\default.xex";
-        std::thread thread(XbdmServerMock::MagicBoot, xexPath);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.LaunchXex(xexPath);
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-    });
-
-    runner.AddTest("Receive file", []() {
+    /* runner.AddTest("Receive file", []() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("fileOnServer.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("resultFile.txt");
         std::thread thread(XbdmServerMock::ReceiveFile, pathOnServer.string());
@@ -201,6 +186,13 @@ int main()
         TEST_EQ(file4->Size, 11);
         TEST_EQ(file4->IsDirectory, false);
         TEST_EQ(file4->IsXex, true);
+    });
+
+    runner.AddTest("Start XEX", [&]() {
+        std::string xexPath = "Hdd:\\Path\\To\\Game\\default.xex";
+        console.LaunchXex(xexPath);
+
+        // No value to check here, we just make sure Console::LaunchXex doesn't throw
     });
 
     // Running the tests and shuting down the server

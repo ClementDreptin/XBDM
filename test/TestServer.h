@@ -51,6 +51,7 @@ private:
     void DriveList(const std::vector<Arg> &args);
     void DriveFreeSpace(const std::vector<Arg> &args);
     void DirectoryContents(const std::vector<Arg> &args);
+    void MagicBoot(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();

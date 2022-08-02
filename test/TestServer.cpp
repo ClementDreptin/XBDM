@@ -11,6 +11,7 @@ TestServer::TestServer()
     m_CommandMap["drivelist"] = std::bind(&TestServer::DriveList, this, std::placeholders::_1);
     m_CommandMap["drivefreespace"] = std::bind(&TestServer::DriveFreeSpace, this, std::placeholders::_1);
     m_CommandMap["dirlist"] = std::bind(&TestServer::DirectoryContents, this, std::placeholders::_1);
+    m_CommandMap["magicboot"] = std::bind(&TestServer::MagicBoot, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -131,6 +132,29 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
         "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n.";
 
     Send(response);
+}
+
+void TestServer::MagicBoot(const std::vector<Arg> &args)
+{
+    if (args.size() != 2)
+    {
+        Send("400- more than two arguments provided");
+        return;
+    }
+
+    if (args[0].Name != "title")
+    {
+        Send("400- argument 'title' not found");
+        return;
+    }
+
+    if (args[1].Name != "directory")
+    {
+        Send("400- argument 'directory' not found");
+        return;
+    }
+
+    Send("200- OK");
 }
 
 bool TestServer::InitServerSocket()
