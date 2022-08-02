@@ -10,6 +10,7 @@ TestServer::TestServer()
     m_CommandMap["dbgname"] = std::bind(&TestServer::ConsoleName, this, std::placeholders::_1);
     m_CommandMap["drivelist"] = std::bind(&TestServer::DriveList, this, std::placeholders::_1);
     m_CommandMap["drivefreespace"] = std::bind(&TestServer::DriveFreeSpace, this, std::placeholders::_1);
+    m_CommandMap["dirlist"] = std::bind(&TestServer::DirectoryContents, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -75,7 +76,25 @@ void TestServer::DriveList(const std::vector<Arg> &)
 
 void TestServer::DriveFreeSpace(const std::vector<Arg> &)
 {
-    Send("200- freetocallerhi=0x0 freetocallerlo=0xa totalbyteshi=0x0 totalbyteslo=0xb totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n");
+    std::string response =
+        "200- "
+        "freetocallerhi=0x0 freetocallerlo=0xa "
+        "totalbyteshi=0x0 totalbyteslo=0xb "
+        "totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
+
+    Send(response);
+}
+
+void TestServer::DirectoryContents(const std::vector<Arg> &)
+{
+    std::string response =
+        "202- multiline response follows\r\n"
+        "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
+        "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
+        "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
+        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n";
+
+    Send(response);
 }
 
 bool TestServer::InitServerSocket()

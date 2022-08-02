@@ -50,6 +50,7 @@ private:
     void ConsoleName(const std::vector<Arg> &);
     void DriveList(const std::vector<Arg> &);
     void DriveFreeSpace(const std::vector<Arg> &);
+    void DirectoryContents(const std::vector<Arg> &);
 
     bool InitServerSocket();
     bool InitClientSocket();
