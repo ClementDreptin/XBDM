@@ -1,6 +1,7 @@
 #include "TestServer.h"
 
 #include <sstream>
+#include <fstream>
 
 #include "../src/Utils.h"
 
@@ -12,6 +13,7 @@ TestServer::TestServer()
     m_CommandMap["drivefreespace"] = std::bind(&TestServer::DriveFreeSpace, this, std::placeholders::_1);
     m_CommandMap["dirlist"] = std::bind(&TestServer::DirectoryContents, this, std::placeholders::_1);
     m_CommandMap["magicboot"] = std::bind(&TestServer::MagicBoot, this, std::placeholders::_1);
+    m_CommandMap["getfile"] = std::bind(&TestServer::ReceiveFile, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -91,7 +93,7 @@ void TestServer::DriveFreeSpace(const std::vector<Arg> &args)
 {
     if (args.size() != 1)
     {
-        Send("400- more than one argument provided");
+        Send("400- wrong number of arguments provided, one expected");
         return;
     }
 
@@ -114,7 +116,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
 {
     if (args.size() != 1)
     {
-        Send("400- more than one argument provided");
+        Send("400- wrong number of arguments provided, one expected");
         return;
     }
 
@@ -138,7 +140,7 @@ void TestServer::MagicBoot(const std::vector<Arg> &args)
 {
     if (args.size() != 2)
     {
-        Send("400- more than two arguments provided");
+        Send("400- wrong number of arguments provided, two expected");
         return;
     }
 
@@ -155,6 +157,68 @@ void TestServer::MagicBoot(const std::vector<Arg> &args)
     }
 
     Send("200- OK");
+}
+
+void TestServer::ReceiveFile(const std::vector<Arg> &args)
+{
+    if (args.size() != 1)
+    {
+        Send("400- wrong number of arguments provided, one expected");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found");
+        return;
+    }
+
+    const std::string &filePath = args[0].Value;
+
+    // Open the requested file
+    std::ifstream inFile;
+    inFile.open(filePath, std::ifstream::binary);
+
+    if (inFile.fail())
+    {
+        Send("404- Couldn't open file: " + filePath);
+        return;
+    }
+
+    // Get the file size
+    inFile.seekg(0, inFile.end);
+    int fileSize = static_cast<int>(inFile.tellg());
+    inFile.seekg(0, inFile.beg);
+
+    // Start building the response
+    std::vector<char> response;
+    std::string header = "203- binary response follows\r\n";
+
+    // The final response will contain the header, a 32-bit integer for the file size and the file content
+    // so we preallocate enough memory for that
+    response.reserve(header.size() + sizeof(fileSize) + fileSize);
+
+    // Append the header and the file size to the response
+    response.insert(response.end(), header.begin(), header.end());
+    response.insert(response.end(), reinterpret_cast<const char *>(&fileSize), reinterpret_cast<const char *>(&fileSize) + sizeof(fileSize));
+
+    // Buffer to hold file chunks while reading it
+    char buffer[s_PacketSize] = { 0 };
+
+    while (!inFile.eof())
+    {
+        inFile.read(buffer, sizeof(buffer));
+
+        // Append the current chunk to the response
+        response.insert(response.end(), buffer, buffer + inFile.gcount());
+
+        // Reset the buffer
+        memset(buffer, 0, sizeof(buffer));
+    }
+
+    inFile.close();
+
+    Send(response.data(), response.size(), false);
 }
 
 bool TestServer::InitServerSocket()
@@ -221,11 +285,11 @@ bool TestServer::InitClientSocket()
 
 bool TestServer::Run()
 {
-    char buffer[1024] = { 0 };
+    char buffer[s_PacketSize + 1] = { 0 };
 
     while (m_Listening)
     {
-        if (recv(m_ClientSocket, buffer, sizeof(buffer) - 1, 0) <= 0)
+        if (recv(m_ClientSocket, buffer, s_PacketSize, 0) <= 0)
             continue;
 
         Command command = Parse(buffer);
@@ -239,21 +303,20 @@ bool TestServer::Run()
     return true;
 }
 
-bool TestServer::Send(const std::string &response)
+bool TestServer::Send(const std::string &response, bool sendFinalNewLine)
 {
-    return Send(response.c_str(), response.size());
+    return Send(response.c_str(), response.size(), sendFinalNewLine);
 }
 
-bool TestServer::Send(const char *buffer, size_t length)
+bool TestServer::Send(const char *buffer, size_t length, bool sendFinalNewLine)
 {
-    const size_t chunkSize = 32;
     int sent = 0;
     int totalSent = 0;
 
-    // Send data in chunks of 32 bytes at most to simulate packets
-    for (size_t i = 0; i < length; i += chunkSize)
+    // Send data in chunks of s_PacketSize bytes at most to simulate packets
+    for (size_t i = 0; i < length; i += s_PacketSize)
     {
-        size_t toSend = std::min<size_t>(chunkSize, length - totalSent);
+        size_t toSend = std::min<size_t>(s_PacketSize, length - totalSent);
         if ((sent = send(m_ClientSocket, buffer + i, static_cast<int>(toSend), 0)) == SOCKET_ERROR)
         {
             Shutdown();
@@ -262,6 +325,10 @@ bool TestServer::Send(const char *buffer, size_t length)
 
         totalSent += sent;
     }
+
+    // If the final new line characters are not necessary, stop here
+    if (!sendFinalNewLine)
+        return true;
 
     // Send the new line character to mark the end of the response
     const char *responseEnd = "\r\n";

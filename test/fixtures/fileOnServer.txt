@@ -1,1 +1,1 @@
-Some a text file on the server with some content
+Some text file on the server with some content

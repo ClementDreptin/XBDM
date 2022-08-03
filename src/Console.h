@@ -36,7 +36,7 @@ private:
     std::string m_IpAddress;
     std::string m_Name;
     SOCKET m_Socket;
-    static const int s_PacketSize = 2048;
+    static const int s_PacketSize = 1024;
 
     std::string Receive();
     void SendCommand(const std::string &command);

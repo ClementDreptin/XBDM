@@ -13,28 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Receive file", []() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("fileOnServer.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("resultFile.txt");
-        std::thread thread(XbdmServerMock::ReceiveFile, pathOnServer.string());
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.ReceiveFile(pathOnServer.string(), pathOnClient.string());
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-
-        TEST_EQ(fs::exists(pathOnClient), true);
-        TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
-
-        fs::remove(pathOnClient);
-    });
-
-    runner.AddTest("Send file", []() {
+    /* runner.AddTest("Send file", []() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("resultFile.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("fileOnClient.txt");
         std::thread thread(XbdmServerMock::SendFile, pathOnServer.string(), pathOnClient.string());
@@ -193,6 +172,18 @@ int main()
         console.LaunchXex(xexPath);
 
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
+    });
+
+    runner.AddTest("Receive file", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("fileOnServer.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("resultFile.txt");
+
+        console.ReceiveFile(pathOnServer.string(), pathOnClient.string());
+
+        TEST_EQ(fs::exists(pathOnClient), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
+
+        fs::remove(pathOnClient);
     });
 
     // Running the tests and shuting down the server

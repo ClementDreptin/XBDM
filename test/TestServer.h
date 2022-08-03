@@ -42,6 +42,7 @@ private:
     SOCKET m_ServerSocket;
     SOCKET m_ClientSocket;
     bool m_Listening;
+    static const int s_PacketSize = 1024;
     std::mutex m_Mutex;
     std::condition_variable m_Cond;
 
@@ -52,12 +53,13 @@ private:
     void DriveFreeSpace(const std::vector<Arg> &args);
     void DirectoryContents(const std::vector<Arg> &args);
     void MagicBoot(const std::vector<Arg> &args);
+    void ReceiveFile(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();
     bool Run();
-    bool Send(const std::string &response);
-    bool Send(const char *buffer, size_t length);
+    bool Send(const std::string &response, bool sendFinalNewLine = true);
+    bool Send(const char *buffer, size_t length, bool sendFinalNewLine = true);
     void SignalListening(bool isListening);
     void Shutdown();
 
