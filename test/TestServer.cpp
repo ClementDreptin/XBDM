@@ -24,6 +24,7 @@ TestServer::TestServer()
     m_CommandMap["getfile"] = BIND_FN(ReceiveFile);
     m_CommandMap["sendfile"] = BIND_FN(SendFile);
     m_CommandMap["delete"] = BIND_FN(DeleteFile);
+    m_CommandMap["mkdir"] = BIND_FN(CreateDirectory);
 }
 
 void TestServer::Start()
@@ -344,11 +345,21 @@ void TestServer::DeleteFile(const std::vector<Arg> &args)
         return;
     }
 
-    bool isDirectory = args.size() == 2 && args[1].Name == "dir";
+    Send("200- OK\r\n");
+}
 
-    if (isDirectory)
+void TestServer::CreateDirectory(const std::vector<Arg> &args)
+{
+    if (args.size() != 1)
     {
-        // Not implemented yet
+        Send("400- wrong number of arguments provided, one expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found\r\n");
+        return;
     }
 
     Send("200- OK\r\n");

@@ -13,22 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Create directory", []() {
-        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
-        std::thread thread(XbdmServerMock::CreateDirectory, fakePath);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.CreateDirectory(fakePath);
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-    });
-
-    runner.AddTest("Rename file", []() {
+    /* runner.AddTest("Rename file", []() {
         std::string fakeOldPath = "Hdd:\\Fake\\Old\\Path";
         std::string fakeNewPath = "Hdd:\\Fake\\New\\Path";
         std::thread thread(XbdmServerMock::RenameFile, fakeOldPath, fakeNewPath);
@@ -152,6 +137,13 @@ int main()
         console.DeleteFile(Utils::GetFixtureDir().string(), true);
 
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
+    });
+
+    runner.AddTest("Create directory", [&]() {
+        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
+        console.CreateDirectory(fakePath);
+
+        // No value to check here, we just make sure Console::CreateDirectory doesn't throw
     });
 
     // Running the tests and shuting down the server
