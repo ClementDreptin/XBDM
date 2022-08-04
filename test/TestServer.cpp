@@ -483,7 +483,12 @@ TestServer::Command TestServer::Parse(const std::string &commandString)
 
         size_t equalSignIndex = tokens[i].find('=');
         if (equalSignIndex == std::string::npos)
+        {
+            // If there is no equal sign, it means tokens[i] is an argument with no value like 'dir'
+            // (e.g. delete name="Hdd:\Path\To\Dir" dir)
+            command.Args.emplace_back(tokens[i], "", Arg::ArgType::String);
             continue;
+        }
 
         std::string name = tokens[i].substr(0, equalSignIndex);
         std::string value = tokens[i].substr(equalSignIndex + 1, tokens[i].size());
