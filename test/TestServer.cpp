@@ -3,10 +3,13 @@
 #include <sstream>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 #include "../src/Utils.h"
+#include "Utils.h"
 
 using namespace std::chrono_literals;
+namespace fs = std::filesystem;
 
 #define BIND_FN(fn) std::bind(&TestServer::fn, this, std::placeholders::_1)
 
@@ -133,14 +136,42 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
         return;
     }
 
-    std::string response =
-        "202- multiline response follows\r\n"
-        "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
-        "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
-        "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
-        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n.\r\n";
+    // The client will create paths using backslashes (\) because that's what the Xbox 360 uses.
+    // For the tests we need to forward slashes (/) on POSIX systems so we patch them here.
+#ifndef _WIN32
+    std::string directoryPath = args[0].Value;
+    std::replace(directoryPath.begin(), directoryPath.end(), '\\', '/');
+#else
+    const std::string &directoryPath = args[0].Value;
+#endif
 
-    Send(response);
+    if (!fs::exists(directoryPath))
+    {
+        Send("404- " + directoryPath + " not found");
+        return;
+    }
+
+    std::stringstream response;
+    response << "202- multiline response follows\r\n";
+
+    for (const auto &entry : std::filesystem::directory_iterator(directoryPath))
+    {
+        std::stringstream line;
+        line << "name=\"" << entry.path().filename().string() << "\"";
+
+        if (!entry.is_directory())
+        {
+            line << " sizehi=0x" << std::hex << (entry.file_size() & 0xffff0000);
+            line << " sizelo=0x" << std::hex << (entry.file_size() & 0x0000ffff);
+            line << "\r\n";
+        }
+        else
+            line << " sizehi=0x0 sizelo=0x0 directory\r\n";
+
+        response << line.str();
+    }
+
+    Send(response.str());
 }
 
 void TestServer::MagicBoot(const std::vector<Arg> &args)
@@ -313,7 +344,7 @@ void TestServer::DeleteFile(const std::vector<Arg> &args)
         return;
     }
 
-    bool isDirectory = args.size() == 2 && args[1].Name == "directory";
+    bool isDirectory = args.size() == 2 && args[1].Name == "dir";
 
     if (isDirectory)
     {

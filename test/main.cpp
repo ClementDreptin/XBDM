@@ -13,22 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Delete directory", []() {
-        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
-        std::thread thread(XbdmServerMock::DeleteFile, fakePath, true);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.DeleteFile(fakePath, true);
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-    });
-
-    runner.AddTest("Create directory", []() {
+    /* runner.AddTest("Create directory", []() {
         std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
         std::thread thread(XbdmServerMock::CreateDirectory, fakePath);
         XbdmServerMock::WaitForServerToListen();
@@ -101,46 +86,39 @@ int main()
     });
 
     runner.AddTest("Get directory contents", [&]() {
-        std::string directoryPath = "Hdd:\\Path\\To\\Game";
-        std::set<XBDM::File> files = console.GetDirectoryContents(directoryPath);
+        std::set<XBDM::File> files = console.GetDirectoryContents(Utils::GetFixtureDir().string());
 
-        TEST_EQ(files.size(), 4);
+        TEST_EQ(files.size(), 3);
 
         auto file1 = std::next(files.begin(), 0);
-        TEST_EQ(file1->Name, "dir1");
+        TEST_EQ(file1->Name, "client");
         TEST_EQ(file1->Size, 0);
         TEST_EQ(file1->IsDirectory, true);
         TEST_EQ(file1->IsXex, false);
 
         auto file2 = std::next(files.begin(), 1);
-        TEST_EQ(file2->Name, "dir2");
+        TEST_EQ(file2->Name, "server");
         TEST_EQ(file2->Size, 0);
         TEST_EQ(file2->IsDirectory, true);
         TEST_EQ(file2->IsXex, false);
 
         auto file3 = std::next(files.begin(), 2);
-        TEST_EQ(file3->Name, "file1.txt");
-        TEST_EQ(file3->Size, 10);
+        TEST_EQ(file3->Name, "file.xex");
+        TEST_EQ(file3->Size, 14);
         TEST_EQ(file3->IsDirectory, false);
-        TEST_EQ(file3->IsXex, false);
-
-        auto file4 = std::next(files.begin(), 3);
-        TEST_EQ(file4->Name, "file2.xex");
-        TEST_EQ(file4->Size, 11);
-        TEST_EQ(file4->IsDirectory, false);
-        TEST_EQ(file4->IsXex, true);
+        TEST_EQ(file3->IsXex, true);
     });
 
     runner.AddTest("Start XEX", [&]() {
-        std::string xexPath = "Hdd:\\Path\\To\\Game\\default.xex";
-        console.LaunchXex(xexPath);
+        std::string fakeXexPath = "Hdd:\\Path\\To\\Game\\default.xex";
+        console.LaunchXex(fakeXexPath);
 
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
     });
 
     runner.AddTest("Receive file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("fileOnServer.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("resultFile.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");
 
         console.ReceiveFile(pathOnServer.string(), pathOnClient.string());
 
@@ -151,8 +129,8 @@ int main()
     });
 
     runner.AddTest("Send file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("resultFile.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("fileOnClient.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("result.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("file.txt");
 
         console.SendFile(pathOnServer.string(), pathOnClient.string());
 
@@ -165,6 +143,13 @@ int main()
     runner.AddTest("Delete file", [&]() {
         std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
         console.DeleteFile(fakePath, false);
+
+        // No value to check here, we just make sure Console::DeleteFile doesn't throw
+    });
+
+    runner.AddTest("Delete directory", [&]() {
+        // This won't actually delete the fixture directory
+        console.DeleteFile(Utils::GetFixtureDir().string(), true);
 
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
     });
