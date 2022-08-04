@@ -8,17 +8,19 @@
 
 using namespace std::chrono_literals;
 
+#define BIND_FN(fn) std::bind(&TestServer::fn, this, std::placeholders::_1)
+
 TestServer::TestServer()
     : m_ServerSocket(INVALID_SOCKET), m_ClientSocket(INVALID_SOCKET), m_Listening(false)
 {
-    m_CommandMap["dbgname"] = std::bind(&TestServer::ConsoleName, this, std::placeholders::_1);
-    m_CommandMap["drivelist"] = std::bind(&TestServer::DriveList, this, std::placeholders::_1);
-    m_CommandMap["drivefreespace"] = std::bind(&TestServer::DriveFreeSpace, this, std::placeholders::_1);
-    m_CommandMap["dirlist"] = std::bind(&TestServer::DirectoryContents, this, std::placeholders::_1);
-    m_CommandMap["magicboot"] = std::bind(&TestServer::MagicBoot, this, std::placeholders::_1);
-    m_CommandMap["getfile"] = std::bind(&TestServer::ReceiveFile, this, std::placeholders::_1);
-    m_CommandMap["sendfile"] = std::bind(&TestServer::SendFile, this, std::placeholders::_1);
-    m_CommandMap["delete"] = std::bind(&TestServer::DeleteFile, this, std::placeholders::_1);
+    m_CommandMap["dbgname"] = BIND_FN(ConsoleName);
+    m_CommandMap["drivelist"] = BIND_FN(DriveList);
+    m_CommandMap["drivefreespace"] = BIND_FN(DriveFreeSpace);
+    m_CommandMap["dirlist"] = BIND_FN(DirectoryContents);
+    m_CommandMap["magicboot"] = BIND_FN(MagicBoot);
+    m_CommandMap["getfile"] = BIND_FN(ReceiveFile);
+    m_CommandMap["sendfile"] = BIND_FN(SendFile);
+    m_CommandMap["delete"] = BIND_FN(DeleteFile);
 }
 
 void TestServer::Start()
