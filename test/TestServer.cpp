@@ -25,6 +25,7 @@ TestServer::TestServer()
     m_CommandMap["sendfile"] = BIND_FN(SendFile);
     m_CommandMap["delete"] = BIND_FN(DeleteFile);
     m_CommandMap["mkdir"] = BIND_FN(CreateDirectory);
+    m_CommandMap["rename"] = BIND_FN(RenameFile);
 }
 
 void TestServer::Start()
@@ -359,6 +360,29 @@ void TestServer::CreateDirectory(const std::vector<Arg> &args)
     if (args[0].Name != "name")
     {
         Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    Send("200- OK\r\n");
+}
+
+void TestServer::RenameFile(const std::vector<Arg> &args)
+{
+    if (args.size() != 2)
+    {
+        Send("400- wrong number of arguments provided, two expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    if (args[1].Name != "newname")
+    {
+        Send("400- argument 'newname' not found\r\n");
         return;
     }
 

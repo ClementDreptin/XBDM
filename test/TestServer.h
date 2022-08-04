@@ -57,6 +57,7 @@ private:
     void SendFile(const std::vector<Arg> &args);
     void DeleteFile(const std::vector<Arg> &args);
     void CreateDirectory(const std::vector<Arg> &args);
+    void RenameFile(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();
