@@ -54,12 +54,13 @@ private:
     void DirectoryContents(const std::vector<Arg> &args);
     void MagicBoot(const std::vector<Arg> &args);
     void ReceiveFile(const std::vector<Arg> &args);
+    void SendFile(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();
     bool Run();
-    bool Send(const std::string &response, bool sendFinalNewLine = true);
-    bool Send(const char *buffer, size_t length, bool sendFinalNewLine = true);
+    bool Send(const std::string &response);
+    bool Send(const char *buffer, size_t length);
     void SignalListening(bool isListening);
     void Shutdown();
 

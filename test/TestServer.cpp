@@ -2,8 +2,11 @@
 
 #include <sstream>
 #include <fstream>
+#include <thread>
 
 #include "../src/Utils.h"
+
+using namespace std::chrono_literals;
 
 TestServer::TestServer()
     : m_ServerSocket(INVALID_SOCKET), m_ClientSocket(INVALID_SOCKET), m_Listening(false)
@@ -14,6 +17,7 @@ TestServer::TestServer()
     m_CommandMap["dirlist"] = std::bind(&TestServer::DirectoryContents, this, std::placeholders::_1);
     m_CommandMap["magicboot"] = std::bind(&TestServer::MagicBoot, this, std::placeholders::_1);
     m_CommandMap["getfile"] = std::bind(&TestServer::ReceiveFile, this, std::placeholders::_1);
+    m_CommandMap["sendfile"] = std::bind(&TestServer::SendFile, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -30,7 +34,7 @@ void TestServer::Start()
         return;
     }
 
-    if (!Send("201- connected"))
+    if (!Send("201- connected\r\n"))
     {
         Shutdown();
         return;
@@ -61,18 +65,18 @@ void TestServer::ConsoleName(const std::vector<Arg> &args)
 {
     if (!args.empty())
     {
-        Send("400- no argument expected");
+        Send("400- no argument expected\r\n");
         return;
     }
 
-    Send("200- TestXDK");
+    Send("200- TestXDK\r\n");
 }
 
 void TestServer::DriveList(const std::vector<Arg> &args)
 {
     if (!args.empty())
     {
-        Send("400- no argument expected");
+        Send("400- no argument expected\r\n");
         return;
     }
 
@@ -84,7 +88,7 @@ void TestServer::DriveList(const std::vector<Arg> &args)
     for (auto &driveName : driveNames)
         response << "drivename=\"" << driveName << "\"\r\n";
 
-    response << '.';
+    response << ".\r\n";
 
     Send(response.str());
 }
@@ -93,13 +97,13 @@ void TestServer::DriveFreeSpace(const std::vector<Arg> &args)
 {
     if (args.size() != 1)
     {
-        Send("400- wrong number of arguments provided, one expected");
+        Send("400- wrong number of arguments provided, one expected\r\n");
         return;
     }
 
     if (args[0].Name != "name")
     {
-        Send("400- argument 'name' not found");
+        Send("400- argument 'name' not found\r\n");
         return;
     }
 
@@ -107,7 +111,7 @@ void TestServer::DriveFreeSpace(const std::vector<Arg> &args)
         "200- "
         "freetocallerhi=0x0 freetocallerlo=0xa "
         "totalbyteshi=0x0 totalbyteslo=0xb "
-        "totalfreebyteshi=0x0 totalfreebyteslo=0xc";
+        "totalfreebyteshi=0x0 totalfreebyteslo=0xc\r\n";
 
     Send(response);
 }
@@ -116,13 +120,13 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
 {
     if (args.size() != 1)
     {
-        Send("400- wrong number of arguments provided, one expected");
+        Send("400- wrong number of arguments provided, one expected\r\n");
         return;
     }
 
     if (args[0].Name != "name")
     {
-        Send("400- argument 'name' not found");
+        Send("400- argument 'name' not found\r\n");
         return;
     }
 
@@ -131,7 +135,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
         "name=\"dir1\" sizehi=0x0 sizelo=0x0 directory\r\n"
         "name=\"file1.txt\" sizehi=0x0 sizelo=0xa\r\n"
         "name=\"dir2\" sizehi=0x0 sizelo=0x0 directory\r\n"
-        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n.";
+        "name=\"file2.xex\" sizehi=0x0 sizelo=0xb\r\n.\r\n";
 
     Send(response);
 }
@@ -140,36 +144,36 @@ void TestServer::MagicBoot(const std::vector<Arg> &args)
 {
     if (args.size() != 2)
     {
-        Send("400- wrong number of arguments provided, two expected");
+        Send("400- wrong number of arguments provided, two expected\r\n");
         return;
     }
 
     if (args[0].Name != "title")
     {
-        Send("400- argument 'title' not found");
+        Send("400- argument 'title' not found\r\n");
         return;
     }
 
     if (args[1].Name != "directory")
     {
-        Send("400- argument 'directory' not found");
+        Send("400- argument 'directory' not found\r\n");
         return;
     }
 
-    Send("200- OK");
+    Send("200- OK\r\n");
 }
 
 void TestServer::ReceiveFile(const std::vector<Arg> &args)
 {
     if (args.size() != 1)
     {
-        Send("400- wrong number of arguments provided, one expected");
+        Send("400- wrong number of arguments provided, one expected\r\n");
         return;
     }
 
     if (args[0].Name != "name")
     {
-        Send("400- argument 'name' not found");
+        Send("400- argument 'name' not found\r\n");
         return;
     }
 
@@ -181,7 +185,7 @@ void TestServer::ReceiveFile(const std::vector<Arg> &args)
 
     if (inFile.fail())
     {
-        Send("404- Couldn't open file: " + filePath);
+        Send("404- Couldn't open file: " + filePath + "\r\n");
         return;
     }
 
@@ -218,7 +222,78 @@ void TestServer::ReceiveFile(const std::vector<Arg> &args)
 
     inFile.close();
 
-    Send(response.data(), response.size(), false);
+    Send(response.data(), response.size());
+}
+
+void TestServer::SendFile(const std::vector<Arg> &args)
+{
+    if (args.size() != 2)
+    {
+        Send("400- wrong number of arguments provided, two expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    if (args[1].Name != "length")
+    {
+        Send("400- argument 'length' not found\r\n");
+        return;
+    }
+
+    const std::string &pathOnServer = args[0].Value;
+
+    // Convert the file size that came in as a hex string to a size_t
+    size_t fileSize;
+    std::stringstream fileSizeStream;
+    fileSizeStream << std::hex << args[1].Value;
+    fileSizeStream >> fileSize;
+
+    // Tell the client to start sending the file content
+    Send("204- send binary data\r\n");
+
+    // Create the file on the server
+    std::ofstream outFile;
+    outFile.open(pathOnServer, std::ofstream::binary);
+
+    if (outFile.fail())
+    {
+        Send("400- Couldn't create file: " + pathOnServer + "\r\n");
+        return;
+    }
+
+    int bytes = 0;
+    int totalBytes = 0;
+    char contentBuffer[s_PacketSize] = { 0 };
+
+    // Receive the content of the file from the client and write it to the file on the server
+    while (totalBytes < fileSize)
+    {
+        // Wait for a little to line up with how long the client waits between each packet
+        std::this_thread::sleep_for(20ms);
+
+        if ((bytes = recv(m_ClientSocket, contentBuffer, sizeof(contentBuffer), 0)) == SOCKET_ERROR)
+        {
+            outFile.close();
+            Send("400- Couldn't receive bytes\r\n");
+            return;
+        }
+
+        totalBytes += bytes;
+
+        outFile.write(contentBuffer, bytes);
+
+        // Reset contentBuffer
+        memset(contentBuffer, 0, sizeof(contentBuffer));
+    }
+
+    outFile.close();
+
+    Send("200- OK\r\n");
 }
 
 bool TestServer::InitServerSocket()
@@ -303,12 +378,12 @@ bool TestServer::Run()
     return true;
 }
 
-bool TestServer::Send(const std::string &response, bool sendFinalNewLine)
+bool TestServer::Send(const std::string &response)
 {
-    return Send(response.c_str(), response.size(), sendFinalNewLine);
+    return Send(response.c_str(), response.size());
 }
 
-bool TestServer::Send(const char *buffer, size_t length, bool sendFinalNewLine)
+bool TestServer::Send(const char *buffer, size_t length)
 {
     int sent = 0;
     int totalSent = 0;
@@ -324,18 +399,6 @@ bool TestServer::Send(const char *buffer, size_t length, bool sendFinalNewLine)
         }
 
         totalSent += sent;
-    }
-
-    // If the final new line characters are not necessary, stop here
-    if (!sendFinalNewLine)
-        return true;
-
-    // Send the new line character to mark the end of the response
-    const char *responseEnd = "\r\n";
-    if (send(m_ClientSocket, responseEnd, static_cast<int>(strlen(responseEnd)), 0) == SOCKET_ERROR)
-    {
-        Shutdown();
-        return false;
     }
 
     return true;

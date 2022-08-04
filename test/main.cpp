@@ -13,28 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Send file", []() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("resultFile.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("fileOnClient.txt");
-        std::thread thread(XbdmServerMock::SendFile, pathOnServer.string(), pathOnClient.string());
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.SendFile(pathOnServer.string(), pathOnClient.string());
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-
-        TEST_EQ(fs::exists(pathOnServer), true);
-        TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
-
-        fs::remove(pathOnServer);
-    });
-
-    runner.AddTest("Delete file", []() {
+    /* runner.AddTest("Delete file", []() {
         std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
         std::thread thread(XbdmServerMock::DeleteFile, fakePath, false);
         XbdmServerMock::WaitForServerToListen();
@@ -184,6 +163,18 @@ int main()
         TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
 
         fs::remove(pathOnClient);
+    });
+
+    runner.AddTest("Send file", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("resultFile.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("fileOnClient.txt");
+
+        console.SendFile(pathOnServer.string(), pathOnClient.string());
+
+        TEST_EQ(fs::exists(pathOnServer), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
+
+        fs::remove(pathOnServer);
     });
 
     // Running the tests and shuting down the server
