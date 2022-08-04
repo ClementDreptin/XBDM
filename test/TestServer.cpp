@@ -149,7 +149,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
 
     if (!fs::exists(directoryPath))
     {
-        Send("404- " + directoryPath + " not found");
+        Send("404- " + directoryPath + " not found\r\n");
         return;
     }
 
@@ -169,6 +169,8 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
         }
         else
             line << " sizehi=0x0 sizelo=0x0 directory\r\n";
+
+        line << ".\r\n";
 
         response << line.str();
     }
@@ -193,6 +195,22 @@ void TestServer::MagicBoot(const std::vector<Arg> &args)
     if (args[1].Name != "directory")
     {
         Send("400- argument 'directory' not found\r\n");
+        return;
+    }
+
+    fs::path titleFileName = args[0].Value;
+    fs::path directoryPath = args[1].Value;
+    fs::path fullPath = directoryPath /= titleFileName;
+
+    if (!fs::exists(fullPath))
+    {
+        Send("404- " + fullPath.string() + " not found\r\n");
+        return;
+    }
+
+    if (fullPath.extension() != ".xex")
+    {
+        Send("400- " + fullPath.string() + " is not a title\r\n");
         return;
     }
 
@@ -346,6 +364,21 @@ void TestServer::DeleteFile(const std::vector<Arg> &args)
         return;
     }
 
+    // The client will create paths using backslashes (\) because that's what the Xbox 360 uses.
+    // For the tests we need to forward slashes (/) on POSIX systems so we patch them here.
+#ifndef _WIN32
+    std::string filePath = args[0].Value;
+    std::replace(filePath.begin(), filePath.end(), '\\', '/');
+#else
+    const std::string &filePath = args[0].Value;
+#endif
+
+    if (!fs::exists(filePath))
+    {
+        Send("404- " + filePath + " not found\r\n");
+        return;
+    }
+
     Send("200- OK\r\n");
 }
 
@@ -360,6 +393,21 @@ void TestServer::CreateDirectory(const std::vector<Arg> &args)
     if (args[0].Name != "name")
     {
         Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    fs::path directoryPath = args[0].Value;
+    fs::path parentPath = directoryPath.parent_path();
+
+    if (fs::exists(directoryPath))
+    {
+        Send("400- " + args[0].Value + " already exists\r\n");
+        return;
+    }
+
+    if (!fs::exists(parentPath) || !fs::is_directory(parentPath))
+    {
+        Send("400- Invalid path: " + args[0].Value + "\r\n");
         return;
     }
 
@@ -383,6 +431,21 @@ void TestServer::RenameFile(const std::vector<Arg> &args)
     if (args[1].Name != "newname")
     {
         Send("400- argument 'newname' not found\r\n");
+        return;
+    }
+
+    const std::string &oldFilePath = args[0].Value;
+    const std::string &newFilePath = args[0].Value;
+
+    if (!fs::exists(oldFilePath))
+    {
+        Send("404- " + oldFilePath + " not found\r\n");
+        return;
+    }
+
+    if (!fs::exists(newFilePath))
+    {
+        Send("400- " + newFilePath + " already exists\r\n");
         return;
     }
 

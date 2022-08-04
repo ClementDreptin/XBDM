@@ -79,8 +79,8 @@ int main()
     });
 
     runner.AddTest("Start XEX", [&]() {
-        std::string fakeXexPath = "Hdd:\\Path\\To\\Game\\default.xex";
-        console.LaunchXex(fakeXexPath);
+        fs::path xexPath = Utils::GetFixtureDir().append("file.xex");
+        console.LaunchXex(xexPath.string());
 
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
     });
@@ -110,8 +110,9 @@ int main()
     });
 
     runner.AddTest("Delete file", [&]() {
-        std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
-        console.DeleteFile(fakePath, false);
+        // This won't actually delete the file
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        console.DeleteFile(pathOnServer.string(), false);
 
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
     });
@@ -124,16 +125,17 @@ int main()
     });
 
     runner.AddTest("Create directory", [&]() {
-        std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
-        console.CreateDirectory(fakePath);
+        // This won't actually create a new directory
+        console.CreateDirectory(Utils::GetFixtureDir().append("newDirectory").string());
 
         // No value to check here, we just make sure Console::CreateDirectory doesn't throw
     });
 
     runner.AddTest("Rename file", [&]() {
-        std::string fakeOldPath = "Hdd:\\Fake\\Old\\Path";
-        std::string fakeNewPath = "Hdd:\\Fake\\New\\Path";
-        console.RenameFile(fakeOldPath, fakeNewPath);
+        // This won't actually rename the file
+        fs::path oldPathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        fs::path newPathOnServer = Utils::GetFixtureDir().append("server").append("newFile.txt");
+        console.RenameFile(oldPathOnServer.string(), newPathOnServer.string());
 
         // No value to check here, we just make sure Console::RenameFile doesn't throw
     });
