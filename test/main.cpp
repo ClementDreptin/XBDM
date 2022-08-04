@@ -13,22 +13,7 @@ namespace fs = std::filesystem;
 
 int main()
 {
-    /* runner.AddTest("Delete file", []() {
-        std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
-        std::thread thread(XbdmServerMock::DeleteFile, fakePath, false);
-        XbdmServerMock::WaitForServerToListen();
-
-        XBDM::Console console(TARGET_HOST);
-        bool connectionSuccess = console.OpenConnection();
-        console.DeleteFile(fakePath, false);
-
-        XbdmServerMock::SendRequestToShutdownServer();
-        thread.join();
-
-        TEST_EQ(connectionSuccess, true);
-    });
-
-    runner.AddTest("Delete directory", []() {
+    /* runner.AddTest("Delete directory", []() {
         std::string fakePath = "Hdd:\\Fake\\Path\\To\\Directory";
         std::thread thread(XbdmServerMock::DeleteFile, fakePath, true);
         XbdmServerMock::WaitForServerToListen();
@@ -175,6 +160,13 @@ int main()
         TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
 
         fs::remove(pathOnServer);
+    });
+
+    runner.AddTest("Delete file", [&]() {
+        std::string fakePath = "Hdd:\\Fake\\Path\\To\\File";
+        console.DeleteFile(fakePath, false);
+
+        // No value to check here, we just make sure Console::DeleteFile doesn't throw
     });
 
     // Running the tests and shuting down the server

@@ -55,6 +55,7 @@ private:
     void MagicBoot(const std::vector<Arg> &args);
     void ReceiveFile(const std::vector<Arg> &args);
     void SendFile(const std::vector<Arg> &args);
+    void DeleteFile(const std::vector<Arg> &args);
 
     bool InitServerSocket();
     bool InitClientSocket();

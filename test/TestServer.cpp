@@ -18,6 +18,7 @@ TestServer::TestServer()
     m_CommandMap["magicboot"] = std::bind(&TestServer::MagicBoot, this, std::placeholders::_1);
     m_CommandMap["getfile"] = std::bind(&TestServer::ReceiveFile, this, std::placeholders::_1);
     m_CommandMap["sendfile"] = std::bind(&TestServer::SendFile, this, std::placeholders::_1);
+    m_CommandMap["delete"] = std::bind(&TestServer::DeleteFile, this, std::placeholders::_1);
 }
 
 void TestServer::Start()
@@ -292,6 +293,30 @@ void TestServer::SendFile(const std::vector<Arg> &args)
     }
 
     outFile.close();
+
+    Send("200- OK\r\n");
+}
+
+void TestServer::DeleteFile(const std::vector<Arg> &args)
+{
+    if (args.size() < 1 || args.size() > 2)
+    {
+        Send("400- wrong number of arguments provided, one or two expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    bool isDirectory = args.size() == 2 && args[1].Name == "directory";
+
+    if (isDirectory)
+    {
+        // Not implemented yet
+    }
 
     Send("200- OK\r\n");
 }
