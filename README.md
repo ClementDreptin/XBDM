@@ -36,7 +36,7 @@ Windows
     ```
     or, if you have `msbuild` in your `PATH`
     ```
-    msbuild /p:Configuration=<debug|release> .\build\OpenNeighborhood.sln
+    msbuild /p:Configuration=<debug|release> .\build\XBDM.sln
     ```
 - Cygwin / MinGW
     ```

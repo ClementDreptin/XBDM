@@ -18,15 +18,25 @@ std::vector<std::string> String::Split(const std::string &string, const std::str
 {
     std::vector<std::string> result;
     std::string stringCopy = string;
-    size_t pos = 0;
-    std::string line;
 
-    while ((pos = stringCopy.find(separator)) != std::string::npos)
+    if (separator.empty())
+        return result;
+
+    for (;;)
     {
-        line = stringCopy.substr(0, pos);
+        size_t pos = pos = stringCopy.find(separator);
 
-        if (line != ".")
-            result.push_back(line);
+        // If separator is not in stringCopy, just push what is left of stringCopy
+        // into the vector and return it
+        if (pos == std::string::npos)
+        {
+            result.push_back(stringCopy);
+            return result;
+        }
+
+        std::string token = stringCopy.substr(0, pos);
+
+        result.push_back(token);
 
         stringCopy.erase(0, pos + separator.size());
     }

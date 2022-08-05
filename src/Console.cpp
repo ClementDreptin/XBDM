@@ -142,6 +142,9 @@ std::vector<Drive> Console::GetDrives()
 
     for (auto &line : lines)
     {
+        if (line.empty() || line == ".")
+            continue;
+
         std::string driveName;
 
         try
@@ -214,6 +217,9 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
 
     for (auto &line : lines)
     {
+        if (line.empty() || line == ".")
+            continue;
+
         std::string fileName;
 
         try
@@ -254,8 +260,13 @@ void Console::LaunchXex(const std::string &xexPath)
     std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
 
     SendCommand("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"");
+    std::string response = Receive();
 
-    ClearSocket();
+    if (response.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (response[0] != '2')
+        throw std::invalid_argument("Couldn't launch " + xexPath);
 }
 
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
@@ -457,12 +468,12 @@ void Console::RenameFile(const std::string &oldName, const std::string &newName)
 
 std::string Console::Receive()
 {
+    // We allocate s_PacketSize + 1 but will only receive s_PacketSize at a time to guarantee
+    // that the last byte is always 0 so that strings stay null terminated
+    char buffer[s_PacketSize + 1] = { 0 };
     std::stringstream stream;
-    char buffer[s_PacketSize] = { 0 };
 
-    // We only receive s_PacketSize - 1 bytes to make sure the last byte
-    // is always 0 so that we concat a null terminated string.
-    while (recv(m_Socket, buffer, s_PacketSize - 1, 0) > 0)
+    while (recv(m_Socket, buffer, s_PacketSize, 0) > 0)
     {
         // Give the Xbox 360 some time to notice we received something...
         std::this_thread::sleep_for(10ms);

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <utility>
+#include <functional>
 
 // clang-format off
 #define TEST_EQ(expression, value) if ((expression) != (value)) throw std::runtime_error(static_cast<const std::stringstream &>(std::stringstream() << std::boolalpha << "Expected " << (expression) << " to be " << (value) << " at " << __FILE__ << ":" << __LINE__).str())
@@ -12,7 +13,7 @@
 
 class TestRunner
 {
-    using TestFunction = void (*)();
+    using TestFunction = std::function<void()>;
     using TestCase = std::pair<const char *, TestFunction>;
 
 public:
