@@ -100,40 +100,6 @@ int main()
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
     });
 
-    runner.AddTest("Start inexistant XEX", [&]() {
-        fs::path inexistantXexPath = Utils::GetFixtureDir() /= "inexistant.xex";
-        bool throws = false;
-
-        try
-        {
-            console.LaunchXex(inexistantXexPath.string());
-        }
-        catch (const std::exception &exception)
-        {
-            throws = true;
-            TEST_EQ(exception.what(), "Couldn't launch " + inexistantXexPath.string());
-        }
-
-        TEST_EQ(throws, true);
-    });
-
-    runner.AddTest("Start non XEX file", [&]() {
-        fs::path pathToNonXexFile = Utils::GetFixtureDir().append("server").append("file.txt");
-        bool throws = false;
-
-        try
-        {
-            console.LaunchXex(pathToNonXexFile.string());
-        }
-        catch (const std::exception &exception)
-        {
-            throws = true;
-            TEST_EQ(exception.what(), "Couldn't launch " + pathToNonXexFile.string());
-        }
-
-        TEST_EQ(throws, true);
-    });
-
     runner.AddTest("Receive file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

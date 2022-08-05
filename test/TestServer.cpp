@@ -181,41 +181,8 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
 
 void TestServer::MagicBoot(const std::vector<Arg> &args)
 {
-    if (args.size() != 2)
-    {
-        Send("400- wrong number of arguments provided, two expected\r\n");
-        return;
-    }
-
-    if (args[0].Name != "title")
-    {
-        Send("400- argument 'title' not found\r\n");
-        return;
-    }
-
-    if (args[1].Name != "directory")
-    {
-        Send("400- argument 'directory' not found\r\n");
-        return;
-    }
-
-    fs::path titleFileName = args[0].Value;
-    fs::path directoryPath = args[1].Value;
-    fs::path fullPath = directoryPath /= titleFileName;
-
-    if (!fs::exists(fullPath))
-    {
-        Send("404- " + fullPath.string() + " not found\r\n");
-        return;
-    }
-
-    if (fullPath.extension() != ".xex")
-    {
-        Send("400- " + fullPath.string() + " is not a title\r\n");
-        return;
-    }
-
-    Send("200- OK\r\n");
+    // The Xbox 360 does not respond anything, it tries to launch the provided
+    // path no matter what and an error occurs on the console if the path is invalid.
 }
 
 void TestServer::ReceiveFile(const std::vector<Arg> &args)

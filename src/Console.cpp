@@ -260,13 +260,9 @@ void Console::LaunchXex(const std::string &xexPath)
     std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
 
     SendCommand("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"");
-    std::string response = Receive();
 
-    if (response.size() <= 4)
-        throw std::runtime_error("Response length too short");
-
-    if (response[0] != '2')
-        throw std::invalid_argument("Couldn't launch " + xexPath);
+    // Nothing should be received but just in case
+    ClearSocket();
 }
 
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
