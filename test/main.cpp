@@ -76,11 +76,62 @@ int main()
         TEST_EQ(file3->IsXex, true);
     });
 
+    runner.AddTest("Get directory contents of inexistant directory", [&]() {
+        fs::path inexistantDirectory = Utils::GetFixtureDir() /= "inexistant";
+        bool throws = false;
+
+        try
+        {
+            console.GetDirectoryContents(inexistantDirectory.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Invalid directory path: " + inexistantDirectory.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Start XEX", [&]() {
-        fs::path xexPath = Utils::GetFixtureDir().append("file.xex");
+        fs::path xexPath = Utils::GetFixtureDir() /= "file.xex";
         console.LaunchXex(xexPath.string());
 
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
+    });
+
+    runner.AddTest("Start inexistant XEX", [&]() {
+        fs::path inexistantXexPath = Utils::GetFixtureDir() /= "inexistant.xex";
+        bool throws = false;
+
+        try
+        {
+            console.LaunchXex(inexistantXexPath.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't launch " + inexistantXexPath.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
+    runner.AddTest("Start non XEX file", [&]() {
+        fs::path pathToNonXexFile = Utils::GetFixtureDir().append("server").append("file.txt");
+        bool throws = false;
+
+        try
+        {
+            console.LaunchXex(pathToNonXexFile.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't launch " + pathToNonXexFile.string());
+        }
+
+        TEST_EQ(throws, true);
     });
 
     runner.AddTest("Receive file", [&]() {
@@ -95,6 +146,24 @@ int main()
         fs::remove(pathOnClient);
     });
 
+    runner.AddTest("Receive inexistant file", [&]() {
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");
+        bool throws = false;
+
+        try
+        {
+            console.ReceiveFile(inexistantPathOnServer.string(), pathOnClient.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Invalid remote path: " + inexistantPathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Send file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("result.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("file.txt");
@@ -107,12 +176,47 @@ int main()
         fs::remove(pathOnServer);
     });
 
+    runner.AddTest("Send inexistant file", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("result.txt");
+        fs::path inexistantPathOnClient = Utils::GetFixtureDir().append("client").append("inexistant.txt");
+        bool throws = false;
+
+        try
+        {
+            console.SendFile(pathOnServer.string(), inexistantPathOnClient.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Invalid local path: " + inexistantPathOnClient.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Delete file", [&]() {
         // This won't actually delete the file
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         console.DeleteFile(pathOnServer.string(), false);
 
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
+    });
+
+    runner.AddTest("Delete inexistant file", [&]() {
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
+        bool throws = false;
+
+        try
+        {
+            console.DeleteFile(inexistantPathOnServer.string(), false);
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't delete " + inexistantPathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
     });
 
     runner.AddTest("Delete directory", [&]() {
@@ -122,11 +226,45 @@ int main()
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
     });
 
+    runner.AddTest("Delete inexistant directory", [&]() {
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant");
+        bool throws = false;
+
+        try
+        {
+            console.DeleteFile(inexistantPathOnServer.string(), true);
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Invalid directory path: " + inexistantPathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Create directory", [&]() {
         // This won't actually create a new directory
         console.CreateDirectory(Utils::GetFixtureDir().append("newDirectory").string());
 
         // No value to check here, we just make sure Console::CreateDirectory doesn't throw
+    });
+
+    runner.AddTest("Create already existing directory", [&]() {
+        fs::path existingDirectoryPath = Utils::GetFixtureDir() /= "server";
+        bool throws = false;
+
+        try
+        {
+            console.CreateDirectory(existingDirectoryPath.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't create directory " + existingDirectoryPath.string());
+        }
+
+        TEST_EQ(throws, true);
     });
 
     runner.AddTest("Rename file", [&]() {
@@ -136,6 +274,41 @@ int main()
         console.RenameFile(oldPathOnServer.string(), newPathOnServer.string());
 
         // No value to check here, we just make sure Console::RenameFile doesn't throw
+    });
+
+    runner.AddTest("Rename inexistant file", [&]() {
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
+        fs::path newPathOnServer = Utils::GetFixtureDir().append("server").append("newFile.txt");
+        bool throws = false;
+
+        try
+        {
+            console.RenameFile(inexistantPathOnServer.string(), newPathOnServer.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't rename " + inexistantPathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
+    runner.AddTest("Rename file to already existing file", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        bool throws = false;
+
+        try
+        {
+            console.RenameFile(pathOnServer.string(), pathOnServer.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Couldn't rename " + pathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
     });
 
     // Running the tests and shuting down the server
