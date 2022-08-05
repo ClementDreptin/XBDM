@@ -1,5 +1,6 @@
 #include "TestServer.h"
 
+#include <array>
 #include <sstream>
 #include <fstream>
 #include <thread>
@@ -496,7 +497,7 @@ bool TestServer::InitClientSocket()
     int setToNonBlockingResult = 0;
 #ifdef _WIN32
     unsigned long nonBlocking = 1;
-    setToNonBlockingResult = ioctlsocket(m_ClientSocket, FIONBIO, &nonBlocking)
+    setToNonBlockingResult = ioctlsocket(m_ClientSocket, FIONBIO, &nonBlocking);
 #else
     int flags = fcntl(m_ClientSocket, F_GETFL, 0);
     if (flags == SOCKET_ERROR)
