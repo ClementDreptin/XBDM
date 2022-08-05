@@ -435,7 +435,7 @@ void TestServer::RenameFile(const std::vector<Arg> &args)
     }
 
     const std::string &oldFilePath = args[0].Value;
-    const std::string &newFilePath = args[0].Value;
+    const std::string &newFilePath = args[1].Value;
 
     if (!fs::exists(oldFilePath))
     {
@@ -443,7 +443,7 @@ void TestServer::RenameFile(const std::vector<Arg> &args)
         return;
     }
 
-    if (!fs::exists(newFilePath))
+    if (fs::exists(newFilePath))
     {
         Send("400- " + newFilePath + " already exists\r\n");
         return;
