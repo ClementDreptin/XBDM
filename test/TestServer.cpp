@@ -289,7 +289,7 @@ void TestServer::SendFile(const std::vector<Arg> &args)
     }
 
     int bytes = 0;
-    int totalBytes = 0;
+    size_t totalBytes = 0;
     char contentBuffer[s_PacketSize] = { 0 };
 
     // Receive the content of the file from the client and write it to the file on the server
@@ -305,7 +305,7 @@ void TestServer::SendFile(const std::vector<Arg> &args)
             return;
         }
 
-        totalBytes += bytes;
+        totalBytes += static_cast<size_t>(bytes);
 
         outFile.write(contentBuffer, bytes);
 

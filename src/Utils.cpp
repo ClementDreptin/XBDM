@@ -24,7 +24,7 @@ std::vector<std::string> String::Split(const std::string &string, const std::str
 
     for (;;)
     {
-        size_t pos = pos = stringCopy.find(separator);
+        size_t pos = stringCopy.find(separator);
 
         // If separator is not in stringCopy, just push what is left of stringCopy
         // into the vector and return it
