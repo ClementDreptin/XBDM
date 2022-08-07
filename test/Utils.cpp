@@ -22,6 +22,7 @@ fs::path GetFixtureDir()
     GetModuleFileNameA(NULL, path, MAX_SIZE);
 #else
     size_t result = readlink("/proc/self/exe", path, MAX_SIZE);
+    (void)result;
 #endif
 
     fs::path execFilePath(path);
