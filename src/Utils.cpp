@@ -40,8 +40,6 @@ std::vector<std::string> String::Split(const std::string &string, const std::str
 
         stringCopy.erase(0, pos + separator.size());
     }
-
-    return result;
 }
 
 }

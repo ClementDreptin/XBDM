@@ -11,6 +11,9 @@ workspace "XBDM"
   targetdir "%{wks.location}/bin/%{cfg.buildcfg}"
   objdir "%{wks.location}/obj"
 
+  warnings "High"
+  flags "FatalWarnings"
+
   architecture "x86_64"
 
   configurations {

@@ -179,7 +179,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
     Send(response.str());
 }
 
-void TestServer::MagicBoot(const std::vector<Arg> &args)
+void TestServer::MagicBoot(const std::vector<Arg> &)
 {
     // The Xbox 360 does not respond anything, it tries to launch the provided
     // path no matter what and an error occurs on the console if the path is invalid.

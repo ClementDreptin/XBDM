@@ -52,7 +52,7 @@ private:
     void DriveList(const std::vector<Arg> &args);
     void DriveFreeSpace(const std::vector<Arg> &args);
     void DirectoryContents(const std::vector<Arg> &args);
-    void MagicBoot(const std::vector<Arg> &args);
+    void MagicBoot(const std::vector<Arg> &);
     void ReceiveFile(const std::vector<Arg> &args);
     void SendFile(const std::vector<Arg> &args);
     void DeleteFile(const std::vector<Arg> &args);
