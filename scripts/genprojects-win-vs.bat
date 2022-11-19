@@ -9,8 +9,8 @@ IF NOT EXIST "%PremakeExecutablePath%" (
 )
 
 IF "%1" == "--test" (
-    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2019 --test
+    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2022 --test
 ) ELSE (
-    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2019
+    CALL "%PremakeExecutablePath%" --file="%RootDir%\premake5.lua" vs2022
 )
 

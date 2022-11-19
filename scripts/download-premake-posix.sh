@@ -4,7 +4,7 @@ SCRIPT_DIR=`cd \`dirname "$BASH_SOURCE"\` && pwd -P`
 ROOT_DIR=`dirname "$SCRIPT_DIR"`
 PREMAKE_DIR=$ROOT_DIR/tools/premake
 PREMAKE_ARCHIVE_PATH=$PREMAKE_DIR/tmp.zip
-PREMAKE_VERSION=5.0.0-beta1
+PREMAKE_VERSION=5.0.0-beta2
 OS_LABEL=""
 
 # Check the OS type
