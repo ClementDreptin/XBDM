@@ -32,7 +32,7 @@ Linux / macOS
 Windows
 - Visual Studio
     ```
-    Open .\build\OpenNeighborhood.sln in Visual Studio
+    Open .\build\XBDM.sln in Visual Studio
     ```
     or, if you have `msbuild` in your `PATH`
     ```
