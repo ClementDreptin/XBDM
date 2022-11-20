@@ -161,17 +161,17 @@ std::vector<Drive> Console::GetDrives()
 
         // Get the friendly name for volume, these are from neighborhood
         if (drive.Name == "DEVKIT:" || drive.Name == "E:")
-            drive.FriendlyName = "Game Development Volume (" + drive.Name + ")";
+            drive.FriendlyName = "Game Development Volume";
         else if (drive.Name == "HDD:")
-            drive.FriendlyName = "Retail Hard Drive Emulation (" + drive.Name + ")";
+            drive.FriendlyName = "Retail Hard Drive Emulation";
         else if (drive.Name == "Y:")
-            drive.FriendlyName = "Xbox360 Dashboard Volume (" + drive.Name + ")";
+            drive.FriendlyName = "Xbox360 Dashboard Volume";
         else if (drive.Name == "Z:")
-            drive.FriendlyName = "Devkit Drive (" + drive.Name + ")";
+            drive.FriendlyName = "Devkit Drive";
         else if (drive.Name == "D:" || drive.Name == "GAME:")
-            drive.FriendlyName = "Active Title Media (" + drive.Name + ")";
+            drive.FriendlyName = "Active Title Media";
         else
-            drive.FriendlyName = "Volume (" + drive.Name + ")";
+            drive.FriendlyName = "Volume";
 
         // Get the free space for each drive
         SendCommand("drivefreespace name=\"" + drive.Name + "\\\"");
