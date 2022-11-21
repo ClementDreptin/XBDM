@@ -55,6 +55,9 @@ int main()
     runner.AddTest("Get directory contents", [&]() {
         std::set<XBDM::File> files = console.GetDirectoryContents(Utils::GetFixtureDir().string());
 
+        // This value is hardcoded in the test server instead of the actual file dates for simplicity
+        const time_t creationAndModificationDate = 1447599192;
+
         TEST_EQ(files.size(), 3);
 
         auto file1 = std::next(files.begin(), 0);
@@ -62,18 +65,24 @@ int main()
         TEST_EQ(file1->Size, 0);
         TEST_EQ(file1->IsDirectory, true);
         TEST_EQ(file1->IsXex, false);
+        TEST_EQ(file1->CreationDate, creationAndModificationDate);
+        TEST_EQ(file1->ModificationDate, creationAndModificationDate);
 
         auto file2 = std::next(files.begin(), 1);
         TEST_EQ(file2->Name, "server");
         TEST_EQ(file2->Size, 0);
         TEST_EQ(file2->IsDirectory, true);
         TEST_EQ(file2->IsXex, false);
+        TEST_EQ(file2->CreationDate, creationAndModificationDate);
+        TEST_EQ(file2->ModificationDate, creationAndModificationDate);
 
         auto file3 = std::next(files.begin(), 2);
         TEST_EQ(file3->Name, "file.xex");
         TEST_EQ(file3->Size, 14);
         TEST_EQ(file3->IsDirectory, false);
         TEST_EQ(file3->IsXex, true);
+        TEST_EQ(file3->CreationDate, creationAndModificationDate);
+        TEST_EQ(file3->ModificationDate, creationAndModificationDate);
     });
 
     runner.AddTest("Get directory contents of inexistant directory", [&]() {

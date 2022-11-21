@@ -3,6 +3,8 @@
 
 #include "Utils.h"
 
+#define FILETIME_TO_TIMET(time) (static_cast<time_t>((time) / 10000000L - 11644473600L))
+
 namespace XBDM
 {
 
@@ -243,6 +245,9 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
 
             std::filesystem::path filePath(file.Name);
             file.IsXex = filePath.extension() == ".xex";
+
+            file.CreationDate = FILETIME_TO_TIMET(static_cast<uint64_t>(GetIntegerProperty(line, "createhi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "createlo")));
+            file.ModificationDate = FILETIME_TO_TIMET(static_cast<uint64_t>(GetIntegerProperty(line, "changehi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "changelo")));
 
             files.emplace(file);
         }

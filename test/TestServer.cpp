@@ -162,6 +162,10 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
         std::stringstream line;
         line << "name=\"" << entry.path().filename().string() << "\"";
 
+        // Some random but valid creation and modification dates
+        line << " createhi=0x01d11fb5 createlo=0x59683c00";
+        line << " changehi=0x01d11fb5 changelo=0x59683c00";
+
         if (!entry.is_directory())
         {
             line << " sizehi=0x" << std::hex << (entry.file_size() & 0xffff0000);

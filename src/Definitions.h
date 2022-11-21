@@ -17,19 +17,21 @@ namespace XBDM
 struct Drive
 {
     std::string Name;
-    uint64_t FreeBytesAvailable;
-    uint64_t TotalBytes;
-    uint64_t TotalFreeBytes;
-    uint64_t TotalUsedBytes;
+    uint64_t FreeBytesAvailable = 0;
+    uint64_t TotalBytes = 0;
+    uint64_t TotalFreeBytes = 0;
+    uint64_t TotalUsedBytes = 0;
     std::string FriendlyName;
 };
 
 struct File
 {
     std::string Name;
-    uint64_t Size;
-    bool IsXex;
-    bool IsDirectory;
+    uint64_t Size = 0;
+    bool IsXex = false;
+    bool IsDirectory = false;
+    time_t CreationDate = 0;
+    time_t ModificationDate = 0;
 
     bool operator<(const File &other) const
     {
