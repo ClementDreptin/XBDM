@@ -73,10 +73,12 @@ bool Console::OpenConnection()
         return false;
     }
 
-    if (Receive() != "201- connected\r\n")
+    std::string response = Receive();
+    if (response != "201- connected\r\n")
         return false;
 
     m_Connected = true;
+
     return true;
 }
 
@@ -268,6 +270,20 @@ void Console::LaunchXex(const std::string &xexPath)
 
     // Nothing should be received but just in case
     ClearSocket();
+}
+
+std::string Console::GetActiveTitle()
+{
+    SendCommand("xbeinfo running");
+    std::string activeTitleResponse = Receive();
+
+    if (activeTitleResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (activeTitleResponse[0] != '2')
+        throw std::runtime_error("Couldn't get the active title");
+
+    return GetStringProperty(activeTitleResponse, "name");
 }
 
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)

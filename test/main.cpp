@@ -109,6 +109,12 @@ int main()
         // No value to check here, we just make sure Console::LaunchXex doesn't throw
     });
 
+    runner.AddTest("Get active title", [&]() {
+        std::string activeTitle = console.GetActiveTitle();
+
+        TEST_EQ(activeTitle, "\\Device\\Harddisk0\\SystemExtPartition\\20449700\\dash.xex");
+    });
+
     runner.AddTest("Receive file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

@@ -22,6 +22,7 @@ TestServer::TestServer()
     m_CommandMap["drivefreespace"] = BIND_FN(DriveFreeSpace);
     m_CommandMap["dirlist"] = BIND_FN(DirectoryContents);
     m_CommandMap["magicboot"] = BIND_FN(MagicBoot);
+    m_CommandMap["xbeinfo"] = BIND_FN(ActiveTitle);
     m_CommandMap["getfile"] = BIND_FN(ReceiveFile);
     m_CommandMap["sendfile"] = BIND_FN(SendFile);
     m_CommandMap["delete"] = BIND_FN(DeleteFile);
@@ -187,6 +188,29 @@ void TestServer::MagicBoot(const std::vector<Arg> &)
 {
     // The Xbox 360 does not respond anything, it tries to launch the provided
     // path no matter what and an error occurs on the console if the path is invalid.
+}
+
+void TestServer::ActiveTitle(const std::vector<Arg> &args)
+{
+    if (args.size() != 1)
+    {
+        Send("400- wrong number of arguments provided, one expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "running")
+    {
+        Send("400- argument 'running' not found\r\n");
+        return;
+    }
+
+    std::string response =
+        "202- multiline response follows\r\n"
+        "timestamp=0x00000000 checksum=0x00000000\r\n"
+        "name=\"\\Device\\Harddisk0\\SystemExtPartition\\20449700\\dash.xex\"\r\n"
+        ".\r\n";
+
+    Send(response);
 }
 
 void TestServer::ReceiveFile(const std::vector<Arg> &args)

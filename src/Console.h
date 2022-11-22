@@ -20,6 +20,7 @@ public:
     std::set<File> GetDirectoryContents(const std::string &directoryPath);
 
     void LaunchXex(const std::string &xexPath);
+    std::string GetActiveTitle();
 
     void ReceiveFile(const std::string &remotePath, const std::string &localPath);
     void SendFile(const std::string &remotePath, const std::string &localPath);
