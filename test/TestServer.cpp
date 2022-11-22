@@ -23,6 +23,7 @@ TestServer::TestServer()
     m_CommandMap["dirlist"] = BIND_FN(DirectoryContents);
     m_CommandMap["magicboot"] = BIND_FN(MagicBoot);
     m_CommandMap["xbeinfo"] = BIND_FN(ActiveTitle);
+    m_CommandMap["consoletype"] = BIND_FN(ConsoleType);
     m_CommandMap["getfile"] = BIND_FN(ReceiveFile);
     m_CommandMap["sendfile"] = BIND_FN(SendFile);
     m_CommandMap["delete"] = BIND_FN(DeleteFile);
@@ -211,6 +212,11 @@ void TestServer::ActiveTitle(const std::vector<Arg> &args)
         ".\r\n";
 
     Send(response);
+}
+
+void TestServer::ConsoleType(const std::vector<Arg> &)
+{
+    Send("200- reviewerkit\r\n");
 }
 
 void TestServer::ReceiveFile(const std::vector<Arg> &args)

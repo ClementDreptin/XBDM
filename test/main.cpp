@@ -115,6 +115,12 @@ int main()
         TEST_EQ(activeTitle, "\\Device\\Harddisk0\\SystemExtPartition\\20449700\\dash.xex");
     });
 
+    runner.AddTest("Get console type", [&]() {
+        std::string consoleType = console.GetType();
+
+        TEST_EQ(consoleType, "reviewerkit");
+    });
+
     runner.AddTest("Receive file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

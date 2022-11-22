@@ -286,6 +286,23 @@ std::string Console::GetActiveTitle()
     return GetStringProperty(activeTitleResponse, "name");
 }
 
+std::string Console::GetType()
+{
+    SendCommand("consoletype");
+    std::string consoleTypeResponse = Receive();
+
+    if (consoleTypeResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (consoleTypeResponse[0] != '2')
+        throw std::runtime_error("Couldn't get the console type");
+
+    // The response is "200- <type>\r\n"
+    // We don't want the first 5 characters ("200- ") nor the last 2 ("\r\n") so the console type
+    // starts at index 5 and is of size consoleTypeResponse.size() - the first 5 characters - the last 2 characters
+    return consoleTypeResponse.substr(5, consoleTypeResponse.size() - 7);
+}
+
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
 {
     char headerBuffer[40] = { 0 };

@@ -54,6 +54,7 @@ private:
     void DirectoryContents(const std::vector<Arg> &args);
     void MagicBoot(const std::vector<Arg> &);
     void ActiveTitle(const std::vector<Arg> &args);
+    void ConsoleType(const std::vector<Arg> &);
     void ReceiveFile(const std::vector<Arg> &args);
     void SendFile(const std::vector<Arg> &args);
     void DeleteFile(const std::vector<Arg> &args);
