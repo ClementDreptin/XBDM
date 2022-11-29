@@ -3,7 +3,8 @@
 
 #include "Utils.h"
 
-#define FILETIME_TO_TIMET(time) (static_cast<time_t>((time) / 10000000L - 11644473600L))
+#define FILETIME_TO_TIMET(time) ((time) / 10000000LL - 11644473600LL)
+#define TIMET_TO_FILETIME(time) ((time) * 10000000LL + 116444736000000000LL)
 
 namespace XBDM
 {
@@ -301,6 +302,37 @@ std::string Console::GetType()
     // We don't want the first 5 characters ("200- ") nor the last 2 ("\r\n") so the console type
     // starts at index 5 and is of size consoleTypeResponse.size() - the first 5 characters - the last 2 characters
     return consoleTypeResponse.substr(5, consoleTypeResponse.size() - 7);
+}
+
+void Console::SynchronizeTime()
+{
+    time_t now = std::time(nullptr);
+
+    SetTime(now);
+}
+
+void Console::SetTime(time_t time)
+{
+    uint64_t filetime = TIMET_TO_FILETIME(time);
+    uint32_t clockHigh = filetime >> 32;
+    uint32_t clockLow = filetime & 0xFFFFFFFF;
+
+    // The command could include a tz argument for the timezone but finding a cross-platform way of
+    // getting the current system timezone is not easy. The time sent to the console will just be
+    // interpreted as a time on the timezone it's currently on
+    std::stringstream command;
+    command << "setsystime ";
+    command << "clockhi=0x" << std::hex << clockHigh << ' ';
+    command << "clocklo=0x" << std::hex << clockLow;
+
+    SendCommand(command.str());
+    std::string setTimeResponse = Receive();
+
+    if (setTimeResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (setTimeResponse[0] != '2')
+        throw std::runtime_error("Couldn't set the system time");
 }
 
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)

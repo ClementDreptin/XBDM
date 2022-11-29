@@ -55,6 +55,7 @@ private:
     void MagicBoot(const std::vector<Arg> &);
     void ActiveTitle(const std::vector<Arg> &args);
     void ConsoleType(const std::vector<Arg> &);
+    void SetSystemTime(const std::vector<Arg> &args);
     void ReceiveFile(const std::vector<Arg> &args);
     void SendFile(const std::vector<Arg> &args);
     void DeleteFile(const std::vector<Arg> &args);

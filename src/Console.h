@@ -24,6 +24,9 @@ public:
     std::string GetActiveTitle();
     std::string GetType();
 
+    void SynchronizeTime();
+    void SetTime(time_t time);
+
     void ReceiveFile(const std::string &remotePath, const std::string &localPath);
     void SendFile(const std::string &remotePath, const std::string &localPath);
     void DeleteFile(const std::string &path, bool isDirectory);

@@ -121,6 +121,12 @@ int main()
         TEST_EQ(consoleType, "reviewerkit");
     });
 
+    runner.AddTest("Synchronize time", [&]() {
+        console.SynchronizeTime();
+
+        // No value to check here, we just make sure Console::SynchronizeTime doesn't throw
+    });
+
     runner.AddTest("Receive file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

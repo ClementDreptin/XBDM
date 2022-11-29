@@ -24,6 +24,7 @@ TestServer::TestServer()
     m_CommandMap["magicboot"] = BIND_FN(MagicBoot);
     m_CommandMap["xbeinfo"] = BIND_FN(ActiveTitle);
     m_CommandMap["consoletype"] = BIND_FN(ConsoleType);
+    m_CommandMap["setsystime"] = BIND_FN(SetSystemTime);
     m_CommandMap["getfile"] = BIND_FN(ReceiveFile);
     m_CommandMap["sendfile"] = BIND_FN(SendFile);
     m_CommandMap["delete"] = BIND_FN(DeleteFile);
@@ -217,6 +218,29 @@ void TestServer::ActiveTitle(const std::vector<Arg> &args)
 void TestServer::ConsoleType(const std::vector<Arg> &)
 {
     Send("200- reviewerkit\r\n");
+}
+
+void TestServer::SetSystemTime(const std::vector<Arg> &args)
+{
+    if (args.size() != 2)
+    {
+        Send("400- wrong number of arguments provided, 2 expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "clockhi")
+    {
+        Send("400- argument 'clockhi' not found\r\n");
+        return;
+    }
+
+    if (args[1].Name != "clocklo")
+    {
+        Send("400- argument 'clocklo' not found\r\n");
+        return;
+    }
+
+    Send("200- OK\r\n");
 }
 
 void TestServer::ReceiveFile(const std::vector<Arg> &args)
