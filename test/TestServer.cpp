@@ -505,7 +505,8 @@ void TestServer::RenameFile(const std::vector<Arg> &args)
 
 bool TestServer::InitServerSocket()
 {
-    sockaddr_in address = { 0 };
+    sockaddr_in address;
+    memset(&address, 0, sizeof(sockaddr_in));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     address.sin_port = htons(730);
