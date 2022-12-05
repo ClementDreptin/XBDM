@@ -127,6 +127,24 @@ int main()
         // No value to check here, we just make sure Console::SynchronizeTime doesn't throw
     });
 
+    runner.AddTest("Cold reboot", [&]() {
+        console.ColdReboot();
+
+        // No value to check here, we just make sure Console::ColdReboot doesn't throw
+    });
+
+    runner.AddTest("Reboot to dashboard", [&]() {
+        console.RebootToDashboard();
+
+        // No value to check here, we just make sure Console::RebootToDashboard doesn't throw
+    });
+
+    runner.AddTest("Restart active title", [&]() {
+        console.RestartActiveTitle();
+
+        // No value to check here, we just make sure Console::RestartActiveTitle doesn't throw
+    });
+
     runner.AddTest("Receive file", [&]() {
         fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

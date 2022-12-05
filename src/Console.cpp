@@ -335,6 +335,39 @@ void Console::SetTime(time_t time)
         throw std::runtime_error("Couldn't set the system time");
 }
 
+void Console::ColdReboot()
+{
+    SendCommand("magicboot COLD");
+
+    std::string coldRebootResponse = Receive();
+
+    if (coldRebootResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (coldRebootResponse[0] != '2')
+        throw std::runtime_error("Couldn't cold reboot the console");
+}
+
+void Console::RebootToDashboard()
+{
+    SendCommand("magicboot");
+
+    std::string rebootToDashboardResponse = Receive();
+
+    if (rebootToDashboardResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (rebootToDashboardResponse[0] != '2')
+        throw std::runtime_error("Couldn't go to the dashboard");
+}
+
+void Console::RestartActiveTitle()
+{
+    std::string activeTitlePath = GetActiveTitle();
+
+    LaunchXex(activeTitlePath);
+}
+
 void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
 {
     char headerBuffer[40] = { 0 };

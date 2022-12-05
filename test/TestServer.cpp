@@ -186,10 +186,35 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
     Send(response.str());
 }
 
-void TestServer::MagicBoot(const std::vector<Arg> &)
+void TestServer::MagicBoot(const std::vector<Arg> &args)
 {
-    // The Xbox 360 does not respond anything, it tries to launch the provided
-    // path no matter what and an error occurs on the console if the path is invalid.
+    // Case of launching a specific XEX
+    if (args.size() == 2)
+    {
+        if (args[0].Name != "title")
+        {
+            Send("400- argument 'title' not found\r\n");
+            return;
+        }
+
+        if (args[1].Name != "directory")
+        {
+            Send("400- argument 'directory' not found\r\n");
+            return;
+        }
+
+        const std::string &title = args[0].Value;
+        const std::string &providedDirectory = args[1].Value;
+        std::string directoryFromTitle = title.substr(0, title.find_last_of('\\') + 1);
+
+        if (providedDirectory != directoryFromTitle)
+        {
+            Send("400- the value of 'directory' does not match with the title path\r\n");
+            return;
+        }
+    }
+
+    Send("200- OK");
 }
 
 void TestServer::ActiveTitle(const std::vector<Arg> &args)
@@ -480,7 +505,7 @@ void TestServer::RenameFile(const std::vector<Arg> &args)
 
 bool TestServer::InitServerSocket()
 {
-    sockaddr_in address;
+    sockaddr_in address = { 0 };
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     address.sin_port = htons(730);
