@@ -352,7 +352,9 @@ void Console::GoToDashboard()
 {
     SendCommand("magicboot");
 
-    std::string rebootToDashboardResponse = Receive();
+    // I don't know why but going to the dashboard seems to take longer than other operations
+    // and the console takes longer to respond
+    std::this_thread::sleep_for(20ms);
 
     std::string goToDashboardResponse = Receive();
 
