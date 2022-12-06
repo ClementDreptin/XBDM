@@ -128,15 +128,15 @@ int main()
     });
 
     runner.AddTest("Cold reboot", [&]() {
-        console.ColdReboot();
+        console.Reboot();
 
-        // No value to check here, we just make sure Console::ColdReboot doesn't throw
+        // No value to check here, we just make sure Console::Reboot doesn't throw
     });
 
     runner.AddTest("Reboot to dashboard", [&]() {
-        console.RebootToDashboard();
+        console.GoToDashboard();
 
-        // No value to check here, we just make sure Console::RebootToDashboard doesn't throw
+        // No value to check here, we just make sure Console::GoToDashboard doesn't throw
     });
 
     runner.AddTest("Restart active title", [&]() {

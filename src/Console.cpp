@@ -335,29 +335,31 @@ void Console::SetTime(time_t time)
         throw std::runtime_error("Couldn't set the system time");
 }
 
-void Console::ColdReboot()
+void Console::Reboot()
 {
     SendCommand("magicboot COLD");
 
-    std::string coldRebootResponse = Receive();
+    std::string rebootResponse = Receive();
 
-    if (coldRebootResponse.size() <= 4)
+    if (rebootResponse.size() <= 4)
         throw std::runtime_error("Response length too short");
 
-    if (coldRebootResponse[0] != '2')
+    if (rebootResponse[0] != '2')
         throw std::runtime_error("Couldn't cold reboot the console");
 }
 
-void Console::RebootToDashboard()
+void Console::GoToDashboard()
 {
     SendCommand("magicboot");
 
     std::string rebootToDashboardResponse = Receive();
 
-    if (rebootToDashboardResponse.size() <= 4)
+    std::string goToDashboardResponse = Receive();
+
+    if (goToDashboardResponse.size() <= 4)
         throw std::runtime_error("Response length too short");
 
-    if (rebootToDashboardResponse[0] != '2')
+    if (goToDashboardResponse[0] != '2')
         throw std::runtime_error("Couldn't go to the dashboard");
 }
 

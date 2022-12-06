@@ -27,8 +27,8 @@ public:
     void SynchronizeTime();
     void SetTime(time_t time);
 
-    void ColdReboot();
-    void RebootToDashboard();
+    void Reboot();
+    void GoToDashboard();
     void RestartActiveTitle();
 
     void ReceiveFile(const std::string &remotePath, const std::string &localPath);
