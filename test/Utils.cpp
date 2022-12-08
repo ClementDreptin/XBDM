@@ -61,4 +61,32 @@ bool CompareFiles(const fs::path &pathToFirstFile, const fs::path &pathToSecondF
     );
 }
 
+std::vector<std::string> StringSplit(const std::string &string, const std::string &separator)
+{
+    std::vector<std::string> result;
+    std::string stringCopy = string;
+
+    if (separator.empty())
+        return result;
+
+    for (;;)
+    {
+        size_t pos = stringCopy.find(separator);
+
+        // If separator is not in stringCopy, just push what is left of stringCopy
+        // into the vector and return it
+        if (pos == std::string::npos)
+        {
+            result.push_back(stringCopy);
+            return result;
+        }
+
+        std::string token = stringCopy.substr(0, pos);
+
+        result.push_back(token);
+
+        stringCopy.erase(0, pos + separator.size());
+    }
+}
+
 }

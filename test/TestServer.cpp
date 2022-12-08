@@ -6,7 +6,6 @@
 #include <thread>
 #include <algorithm>
 
-#include "../src/Utils.h"
 #include "Utils.h"
 
 using namespace std::chrono_literals;
@@ -652,7 +651,7 @@ TestServer::Command TestServer::Parse(const std::string &commandString)
     std::string commandStringCopy = commandString.substr(0, commandString.size() - 2);
 
     Command command;
-    std::vector<std::string> tokens = XBDM::Utils::String::Split(commandStringCopy, " ");
+    std::vector<std::string> tokens = Utils::StringSplit(commandStringCopy, " ");
 
     for (size_t i = 0; i < tokens.size(); i++)
     {
