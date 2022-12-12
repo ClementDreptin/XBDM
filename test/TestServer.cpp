@@ -281,7 +281,14 @@ void TestServer::ReceiveFile(const std::vector<Arg> &args)
         return;
     }
 
+    // The client will create paths using backslashes (\) because that's what the Xbox 360 uses.
+    // For the tests we need to forward slashes (/) on POSIX systems so we patch them here.
+#ifndef _WIN32
+    std::string filePath = args[0].Value;
+    std::replace(filePath.begin(), filePath.end(), '\\', '/');
+#else
     const std::string &filePath = args[0].Value;
+#endif
 
     // Open the requested file
     std::ifstream inFile;
