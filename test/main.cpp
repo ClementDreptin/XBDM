@@ -157,6 +157,18 @@ int main()
         fs::remove(pathOnClient);
     });
 
+    runner.AddTest("Receive directory", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir().append("server");
+        fs::path pathOnClient = Utils::GetFixtureDir().append("clientTmp");
+
+        console.ReceiveDirectory(pathOnServer.string(), pathOnClient.string());
+
+        TEST_EQ(fs::exists(pathOnClient), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer / "file.txt", pathOnClient / "file.txt"), true);
+
+        fs::remove_all(pathOnClient);
+    });
+
     runner.AddTest("Receive inexistant file", [&]() {
         fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
         fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");

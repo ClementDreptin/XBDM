@@ -448,6 +448,25 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     ClearSocket();
 }
 
+void Console::ReceiveDirectory(const std::string &remotePath, const std::string &localPath)
+{
+    std::set<File> files = GetDirectoryContents(remotePath);
+
+    bool directoryCreated = std::filesystem::create_directory(localPath);
+    if (!directoryCreated)
+        throw std::runtime_error("Could not create directory at location " + localPath);
+
+    for (auto &file : files)
+    {
+        std::filesystem::path nextDirectory = std::filesystem::path(localPath) / file.Name;
+
+        if (file.IsDirectory)
+            ReceiveDirectory(remotePath + '\\' + file.Name, nextDirectory.string());
+        else
+            ReceiveFile(remotePath + '\\' + file.Name, nextDirectory.string());
+    }
+}
+
 void Console::SendFile(const std::string &remotePath, const std::string &localPath)
 {
     std::ifstream file;
