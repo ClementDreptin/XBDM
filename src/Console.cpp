@@ -372,7 +372,7 @@ void Console::RestartActiveTitle()
     LaunchXex(activeTitlePath);
 }
 
-void Console::ReceiveFile(const std::string &remotePath, const std::string &localPath)
+void Console::ReceiveFile(const std::string &remotePath, const std::filesystem::path &localPath)
 {
     char headerBuffer[40] = { 0 };
     std::string header = "203- binary response follows\r\n";
@@ -410,7 +410,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     }
 
     int bytes = 0;
-    int totalBytes = 0;
+    size_t totalBytes = 0;
     char contentBuffer[s_PacketSize] = { 0 };
 
     std::ofstream outFile;
@@ -419,7 +419,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     if (outFile.fail())
     {
         ClearSocket();
-        throw std::runtime_error("Invalid local path: " + localPath);
+        throw std::runtime_error("Invalid local path: " + localPath.string());
     }
 
     // Receive the content of the file from the server and write it to the file on the client
@@ -431,7 +431,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
             throw std::runtime_error("Couldn't receive the file");
         }
 
-        totalBytes += bytes;
+        totalBytes += static_cast<size_t>(bytes);
 
         outFile.write(contentBuffer, bytes);
 
@@ -448,17 +448,17 @@ void Console::ReceiveFile(const std::string &remotePath, const std::string &loca
     ClearSocket();
 }
 
-void Console::ReceiveDirectory(const std::string &remotePath, const std::string &localPath)
+void Console::ReceiveDirectory(const std::string &remotePath, const std::filesystem::path &localPath)
 {
     std::set<File> files = GetDirectoryContents(remotePath);
 
     bool directoryCreated = std::filesystem::create_directory(localPath);
     if (!directoryCreated)
-        throw std::runtime_error("Could not create directory at location " + localPath);
+        throw std::runtime_error("Could not create directory at location " + localPath.string());
 
     for (auto &file : files)
     {
-        std::filesystem::path nextDirectory = std::filesystem::path(localPath) / file.Name;
+        std::filesystem::path nextDirectory = localPath / file.Name;
 
         if (file.IsDirectory)
             ReceiveDirectory(remotePath + '\\' + file.Name, nextDirectory.string());
@@ -467,13 +467,13 @@ void Console::ReceiveDirectory(const std::string &remotePath, const std::string 
     }
 }
 
-void Console::SendFile(const std::string &remotePath, const std::string &localPath)
+void Console::SendFile(const std::string &remotePath, const std::filesystem::path &localPath)
 {
     std::ifstream file;
     file.open(localPath, std::ifstream::binary);
 
     if (file.fail())
-        throw std::runtime_error("Invalid local path: " + localPath);
+        throw std::runtime_error("Invalid local path: " + localPath.string());
 
     // Get the file size
     file.seekg(0, file.end);

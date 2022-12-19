@@ -239,8 +239,14 @@ void TestServer::ActiveTitle(const std::vector<Arg> &args)
     Send(response);
 }
 
-void TestServer::ConsoleType(const std::vector<Arg> &)
+void TestServer::ConsoleType(const std::vector<Arg> &args)
 {
+    if (!args.empty())
+    {
+        Send("400- no argument expected\r\n");
+        return;
+    }
+
     Send("200- reviewerkit\r\n");
 }
 
@@ -600,7 +606,7 @@ bool TestServer::Send(const std::string &response)
 bool TestServer::Send(const char *buffer, size_t length)
 {
     int sent = 0;
-    int totalSent = 0;
+    size_t totalSent = 0;
 
     // Send data in chunks of s_PacketSize bytes at most to simulate packets
     for (size_t i = 0; i < length; i += s_PacketSize)
@@ -612,7 +618,7 @@ bool TestServer::Send(const char *buffer, size_t length)
             return false;
         }
 
-        totalSent += sent;
+        totalSent += static_cast<size_t>(sent);
     }
 
     return true;

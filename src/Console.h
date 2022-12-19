@@ -31,9 +31,9 @@ public:
     void GoToDashboard();
     void RestartActiveTitle();
 
-    void ReceiveFile(const std::string &remotePath, const std::string &localPath);
-    void ReceiveDirectory(const std::string &remotePath, const std::string &localPath);
-    void SendFile(const std::string &remotePath, const std::string &localPath);
+    void ReceiveFile(const std::string &remotePath, const std::filesystem::path &localPath);
+    void ReceiveDirectory(const std::string &remotePath, const std::filesystem::path &localPath);
+    void SendFile(const std::string &remotePath, const std::filesystem::path &localPath);
     void DeleteFile(const std::string &path, bool isDirectory);
     void CreateDirectory(const std::string &path);
     void RenameFile(const std::string &oldName, const std::string &newName);
