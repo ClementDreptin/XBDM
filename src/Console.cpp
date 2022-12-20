@@ -423,7 +423,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::filesystem::
     }
 
     // Receive the content of the file from the server and write it to the file on the client
-    while (totalBytes < fileSize)
+    while (totalBytes < static_cast<size_t>(fileSize))
     {
         if ((bytes = recv(m_Socket, contentBuffer, sizeof(contentBuffer), 0)) == SOCKET_ERROR)
         {
