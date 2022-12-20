@@ -5,8 +5,6 @@
 
 #include <thread>
 
-#define TARGET_HOST "127.0.0.1"
-
 namespace fs = std::filesystem;
 
 int main()
@@ -18,7 +16,7 @@ int main()
     std::thread thread(std::bind(&TestServer::Start, &server));
     server.WaitForServerToListen();
 
-    XBDM::Console console(TARGET_HOST);
+    XBDM::Console console("127.0.0.1");
     bool connectionSuccess = console.OpenConnection();
 
     // The tests
@@ -86,7 +84,7 @@ int main()
     });
 
     runner.AddTest("Get directory contents of inexistant directory", [&]() {
-        fs::path inexistantDirectory = Utils::GetFixtureDir() /= "inexistant";
+        fs::path inexistantDirectory = Utils::GetFixtureDir() / "inexistant";
         bool throws = false;
 
         try
@@ -329,6 +327,64 @@ int main()
         {
             throws = true;
             TEST_EQ(exception.what(), "Couldn't rename " + pathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
+    runner.AddTest("Create an XboxPath", [&]() {
+        XBDM::XboxPath completePath("hdd:\\Games\\MyGame\\default.xex");
+        TEST_EQ(completePath.GetDrive(), "hdd:");
+        TEST_EQ(completePath.GetDirName(), "\\Games\\MyGame\\");
+        TEST_EQ(completePath.GetFileName(), "default");
+        TEST_EQ(completePath.GetExtension(), ".xex");
+
+        XBDM::XboxPath noExtension("hdd:\\Games\\MyGame\\default");
+        TEST_EQ(noExtension.GetDrive(), "hdd:");
+        TEST_EQ(noExtension.GetDirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noExtension.GetFileName(), "default");
+        TEST_EQ(noExtension.GetExtension(), "");
+
+        XBDM::XboxPath directory("hdd:\\Games\\MyGame\\");
+        TEST_EQ(directory.GetDrive(), "hdd:");
+        TEST_EQ(directory.GetDirName(), "\\Games\\MyGame\\");
+        TEST_EQ(directory.GetFileName(), "");
+        TEST_EQ(directory.GetExtension(), "");
+
+        XBDM::XboxPath fileAtRoot("hdd:\\file.txt");
+        TEST_EQ(fileAtRoot.GetDrive(), "hdd:");
+        TEST_EQ(fileAtRoot.GetDirName(), "\\");
+        TEST_EQ(fileAtRoot.GetFileName(), "file");
+        TEST_EQ(fileAtRoot.GetExtension(), ".txt");
+    });
+
+    runner.AddTest("Create an XboxPath from an invalid string", [&]() {
+        std::string pathWithoutDrive = "\\dir\\file";
+        bool throws = false;
+
+        try
+        {
+            XBDM::XboxPath xboxPath(pathWithoutDrive);
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), std::string("Couldn't determine the drive name"));
+        }
+
+        TEST_EQ(throws, true);
+
+        std::string pathWithoutBackslashAfterDriveName = "hdd:dir\\file";
+        throws = false;
+
+        try
+        {
+            XBDM::XboxPath xboxPath(pathWithoutBackslashAfterDriveName);
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), std::string("Backslash not found after the drive name"));
         }
 
         TEST_EQ(throws, true);

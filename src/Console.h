@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Definitions.h"
+#include "XboxPath.h"
 
 namespace XBDM
 {
