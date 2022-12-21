@@ -10,13 +10,13 @@ public:
     XboxPath(const std::string &path);
     ~XboxPath() = default;
 
-    const std::string &GetDrive() const { return m_Drive; }
+    const std::string &Drive() const { return m_Drive; }
 
-    const std::string &GetDirName() const { return m_DirName; }
+    const std::string &DirName() const { return m_DirName; }
 
-    const std::string &GetFileName() const { return m_FileName; }
+    const std::string &FileName() const { return m_FileName; }
 
-    const std::string &GetExtension() const { return m_Extension; }
+    const std::string &Extension() const { return m_Extension; }
 
 private:
     std::string m_Drive;

@@ -334,28 +334,28 @@ int main()
 
     runner.AddTest("Create an XboxPath", [&]() {
         XBDM::XboxPath completePath("hdd:\\Games\\MyGame\\default.xex");
-        TEST_EQ(completePath.GetDrive(), "hdd:");
-        TEST_EQ(completePath.GetDirName(), "\\Games\\MyGame\\");
-        TEST_EQ(completePath.GetFileName(), "default");
-        TEST_EQ(completePath.GetExtension(), ".xex");
+        TEST_EQ(completePath.Drive(), "hdd:");
+        TEST_EQ(completePath.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(completePath.FileName(), "default");
+        TEST_EQ(completePath.Extension(), ".xex");
 
         XBDM::XboxPath noExtension("hdd:\\Games\\MyGame\\default");
-        TEST_EQ(noExtension.GetDrive(), "hdd:");
-        TEST_EQ(noExtension.GetDirName(), "\\Games\\MyGame\\");
-        TEST_EQ(noExtension.GetFileName(), "default");
-        TEST_EQ(noExtension.GetExtension(), "");
+        TEST_EQ(noExtension.Drive(), "hdd:");
+        TEST_EQ(noExtension.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noExtension.FileName(), "default");
+        TEST_EQ(noExtension.Extension(), "");
 
         XBDM::XboxPath directory("hdd:\\Games\\MyGame\\");
-        TEST_EQ(directory.GetDrive(), "hdd:");
-        TEST_EQ(directory.GetDirName(), "\\Games\\MyGame\\");
-        TEST_EQ(directory.GetFileName(), "");
-        TEST_EQ(directory.GetExtension(), "");
+        TEST_EQ(directory.Drive(), "hdd:");
+        TEST_EQ(directory.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(directory.FileName(), "");
+        TEST_EQ(directory.Extension(), "");
 
         XBDM::XboxPath fileAtRoot("hdd:\\file.txt");
-        TEST_EQ(fileAtRoot.GetDrive(), "hdd:");
-        TEST_EQ(fileAtRoot.GetDirName(), "\\");
-        TEST_EQ(fileAtRoot.GetFileName(), "file");
-        TEST_EQ(fileAtRoot.GetExtension(), ".txt");
+        TEST_EQ(fileAtRoot.Drive(), "hdd:");
+        TEST_EQ(fileAtRoot.DirName(), "\\");
+        TEST_EQ(fileAtRoot.FileName(), "file");
+        TEST_EQ(fileAtRoot.Extension(), ".txt");
     });
 
     runner.AddTest("Create an XboxPath from an invalid string", [&]() {
