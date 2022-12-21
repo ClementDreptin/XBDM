@@ -10,6 +10,25 @@ public:
     XboxPath(const std::string &path);
     ~XboxPath() = default;
 
+    template<typename T>
+    friend inline std::string operator+(const T &left, const XboxPath &path)
+    {
+        return left + path.String();
+    }
+
+    template<typename T>
+    friend inline std::string operator+(const XboxPath &path, const T &right)
+    {
+        return path.String() + right;
+    }
+
+    friend inline std::ostream &operator<<(std::ostream &stream, const XboxPath &path)
+    {
+        return stream << path.String();
+    }
+
+    const std::string &String() const { return m_FullPath; }
+
     const std::string &Drive() const { return m_Drive; }
 
     const std::string &DirName() const { return m_DirName; }
@@ -18,11 +37,16 @@ public:
 
     const std::string &Extension() const { return m_Extension; }
 
+    XboxPath Parent() const;
+
 private:
+    std::string m_FullPath;
     std::string m_Drive;
     std::string m_DirName;
     std::string m_FileName;
     std::string m_Extension;
+
+    static const char s_Separator = '\\';
 
     void SplitPath(const std::string &path);
 };

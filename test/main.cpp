@@ -108,9 +108,9 @@ int main()
     });
 
     runner.AddTest("Get active title", [&]() {
-        std::string activeTitle = console.GetActiveTitle();
+        XBDM::XboxPath activeTitle = console.GetActiveTitle();
 
-        TEST_EQ(activeTitle, "\\Device\\Harddisk0\\SystemExtPartition\\20449700\\dash.xex");
+        TEST_EQ(activeTitle.String(), "\\Device\\Harddisk0\\SystemExtPartition\\20449700\\dash.xex");
     });
 
     runner.AddTest("Get console type", [&]() {
@@ -332,7 +332,7 @@ int main()
         TEST_EQ(throws, true);
     });
 
-    runner.AddTest("Create an XboxPath", [&]() {
+    runner.AddTest("Create an XboxPath", []() {
         XBDM::XboxPath completePath("hdd:\\Games\\MyGame\\default.xex");
         TEST_EQ(completePath.Drive(), "hdd:");
         TEST_EQ(completePath.DirName(), "\\Games\\MyGame\\");
@@ -356,38 +356,32 @@ int main()
         TEST_EQ(fileAtRoot.DirName(), "\\");
         TEST_EQ(fileAtRoot.FileName(), "file");
         TEST_EQ(fileAtRoot.Extension(), ".txt");
+
+        XBDM::XboxPath relativePath("hdd:Games\\MyGame\\default.xex");
+        TEST_EQ(relativePath.Drive(), "hdd:");
+        TEST_EQ(relativePath.DirName(), "Games\\MyGame\\");
+        TEST_EQ(relativePath.FileName(), "default");
+        TEST_EQ(relativePath.Extension(), ".xex");
+
+        XBDM::XboxPath noDrive("\\Games\\MyGame\\default.xex");
+        TEST_EQ(noDrive.Drive(), "");
+        TEST_EQ(noDrive.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noDrive.FileName(), "default");
+        TEST_EQ(noDrive.Extension(), ".xex");
+
+        XBDM::XboxPath noDriveDir("\\Games\\MyGame\\");
+        TEST_EQ(noDriveDir.Drive(), "");
+        TEST_EQ(noDriveDir.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noDriveDir.FileName(), "");
+        TEST_EQ(noDriveDir.Extension(), "");
     });
 
-    runner.AddTest("Create an XboxPath from an invalid string", [&]() {
-        std::string pathWithoutDrive = "\\dir\\file";
-        bool throws = false;
+    runner.AddTest("Get the parent directory of an XboxPath", []() {
+        XBDM::XboxPath filePath = "hdd:\\Games\\MyGame\\default.xex";
+        TEST_EQ(filePath.Parent().String(), "hdd:\\Games\\MyGame");
 
-        try
-        {
-            XBDM::XboxPath xboxPath(pathWithoutDrive);
-        }
-        catch (const std::exception &exception)
-        {
-            throws = true;
-            TEST_EQ(exception.what(), std::string("Couldn't determine the drive name"));
-        }
-
-        TEST_EQ(throws, true);
-
-        std::string pathWithoutBackslashAfterDriveName = "hdd:dir\\file";
-        throws = false;
-
-        try
-        {
-            XBDM::XboxPath xboxPath(pathWithoutBackslashAfterDriveName);
-        }
-        catch (const std::exception &exception)
-        {
-            throws = true;
-            TEST_EQ(exception.what(), std::string("Backslash not found after the drive name"));
-        }
-
-        TEST_EQ(throws, true);
+        XBDM::XboxPath dirPath = "hdd:\\Games\\MyGame\\";
+        TEST_EQ(dirPath.Parent().String(), "hdd:\\Games");
     });
 
     // Running the tests and shuting down the server
