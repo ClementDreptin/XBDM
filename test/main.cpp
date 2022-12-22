@@ -84,7 +84,7 @@ int main()
     });
 
     runner.AddTest("Get directory contents of inexistant directory", [&]() {
-        fs::path inexistantDirectory = Utils::GetFixtureDir() / "inexistant";
+        fs::path inexistantDirectory = Utils::GetFixtureDir() /= "inexistant";
         bool throws = false;
 
         try
@@ -404,6 +404,29 @@ int main()
         TEST_EQ(pathWithoutEndingSeparator.DirName(), "\\Games\\MyGame\\");
         TEST_EQ(pathWithoutEndingSeparator.FileName(), "default");
         TEST_EQ(pathWithoutEndingSeparator.Extension(), ".xex");
+    });
+
+    runner.AddTest("Compare two XboxPaths", []() {
+        XBDM::XboxPath path1 = "hdd:\\Games\\MyGame\\default.xex";
+        XBDM::XboxPath path2 = "hdd:\\Games\\MyGame\\default.xex";
+        XBDM::XboxPath path3 = "hdd:\\Games\\MyOtherGame\\default.xex";
+
+        TEST_EQ(path1 == path2, true);
+        TEST_EQ(path1 == path3, false);
+    });
+
+    runner.AddTest("Check if an XboxPath is at the root of a drive", []() {
+        XBDM::XboxPath rootWithSeparator = "hdd:\\";
+        XBDM::XboxPath rootWithoutSeparator = "hdd:";
+        XBDM::XboxPath notRoot = "Games\\MyGame\\";
+
+        TEST_EQ(rootWithSeparator.IsRoot(), true);
+        TEST_EQ(rootWithoutSeparator.IsRoot(), true);
+        TEST_EQ(notRoot.IsRoot(), false);
+
+        TEST_EQ(rootWithSeparator.Parent().IsRoot(), true);
+        TEST_EQ(rootWithoutSeparator.Parent().IsRoot(), true);
+        TEST_EQ(notRoot.Parent().IsRoot(), true);
     });
 
     // Running the tests and shuting down the server
