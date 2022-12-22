@@ -6,14 +6,7 @@ namespace XBDM
 
 XboxPath::XboxPath(const std::string &path)
 {
-    // Replace any potential forward slash, this can happen if path was built using the
-    // std::filesystem::path API
-    std::string pathCopy = path;
-    std::replace(pathCopy.begin(), pathCopy.end(), '/', s_Separator);
-
-    SplitPath(pathCopy);
-
-    m_FullPath = pathCopy;
+    Init(path);
 }
 
 XboxPath XboxPath::Parent() const
@@ -32,8 +25,39 @@ XboxPath XboxPath::Parent() const
     return XboxPath(m_FullPath.substr(0, lastSeparatorPos));
 }
 
+XboxPath &XboxPath::Append(const std::string &path)
+{
+    if (m_FullPath.back() != s_Separator)
+        m_FullPath += s_Separator;
+
+    m_FullPath += path;
+
+    Init(m_FullPath);
+
+    return *this;
+}
+
+void XboxPath::Init(const std::string &path)
+{
+    // Replace any potential forward slash, this can happen if path was built using the
+    // std::filesystem::path API
+    std::string pathCopy = path;
+    std::replace(pathCopy.begin(), pathCopy.end(), '/', s_Separator);
+
+    SplitPath(pathCopy);
+
+    m_FullPath = pathCopy;
+}
+
 void XboxPath::SplitPath(const std::string &path)
 {
+    // Reset the members
+    m_FullPath.clear();
+    m_Drive.clear();
+    m_DirName.clear();
+    m_FileName.clear();
+    m_Extension.clear();
+
     // Get the drive
     size_t colonPos = path.find_first_of(':');
 
@@ -46,6 +70,14 @@ void XboxPath::SplitPath(const std::string &path)
 
     // Get the file name
     size_t lastDotPos = path.find_last_of('.');
+
+    // Case of file name starting with a dot and no extension (like .gitignore)
+    if (lastDotPos == lastSeparatorPos + 1)
+    {
+        m_FileName = path.substr(lastSeparatorPos + 1);
+        return;
+    }
+
     m_FileName = path.substr(lastSeparatorPos + 1, lastDotPos - lastSeparatorPos - 1);
 
     // Get the extension

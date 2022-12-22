@@ -27,17 +27,24 @@ public:
         return stream << path.String();
     }
 
-    const std::string &String() const { return m_FullPath; }
+    inline XboxPath &operator/=(const std::string &path)
+    {
+        return Append(path);
+    }
 
-    const std::string &Drive() const { return m_Drive; }
+    inline const std::string &String() const { return m_FullPath; }
 
-    const std::string &DirName() const { return m_DirName; }
+    inline const std::string &Drive() const { return m_Drive; }
 
-    const std::string &FileName() const { return m_FileName; }
+    inline const std::string &DirName() const { return m_DirName; }
 
-    const std::string &Extension() const { return m_Extension; }
+    inline const std::string &FileName() const { return m_FileName; }
+
+    inline const std::string &Extension() const { return m_Extension; }
 
     XboxPath Parent() const;
+
+    XboxPath &Append(const std::string &path);
 
 private:
     std::string m_FullPath;
@@ -48,6 +55,7 @@ private:
 
     static const char s_Separator = '\\';
 
+    void Init(const std::string &path);
     void SplitPath(const std::string &path);
 };
 

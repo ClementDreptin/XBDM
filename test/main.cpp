@@ -374,6 +374,12 @@ int main()
         TEST_EQ(noDriveDir.DirName(), "\\Games\\MyGame\\");
         TEST_EQ(noDriveDir.FileName(), "");
         TEST_EQ(noDriveDir.Extension(), "");
+
+        XBDM::XboxPath fileNameStartingWithDot("hdd:\\Games\\MyGame\\.hidden");
+        TEST_EQ(fileNameStartingWithDot.Drive(), "hdd:");
+        TEST_EQ(fileNameStartingWithDot.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(fileNameStartingWithDot.FileName(), ".hidden");
+        TEST_EQ(fileNameStartingWithDot.Extension(), "");
     });
 
     runner.AddTest("Get the parent directory of an XboxPath", []() {
@@ -382,6 +388,22 @@ int main()
 
         XBDM::XboxPath dirPath = "hdd:\\Games\\MyGame\\";
         TEST_EQ(dirPath.Parent().String(), "hdd:\\Games");
+    });
+
+    runner.AddTest("Append string to an XboxPath", []() {
+        XBDM::XboxPath pathWithEndingSeparator = "hdd:\\Games\\MyGame\\";
+        pathWithEndingSeparator /= "default.xex";
+        TEST_EQ(pathWithEndingSeparator.Drive(), "hdd:");
+        TEST_EQ(pathWithEndingSeparator.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(pathWithEndingSeparator.FileName(), "default");
+        TEST_EQ(pathWithEndingSeparator.Extension(), ".xex");
+
+        XBDM::XboxPath pathWithoutEndingSeparator = "hdd:\\Games\\MyGame";
+        pathWithoutEndingSeparator /= "default.xex";
+        TEST_EQ(pathWithoutEndingSeparator.Drive(), "hdd:");
+        TEST_EQ(pathWithoutEndingSeparator.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(pathWithoutEndingSeparator.FileName(), "default");
+        TEST_EQ(pathWithoutEndingSeparator.Extension(), ".xex");
     });
 
     // Running the tests and shuting down the server
