@@ -60,6 +60,8 @@ public:
 
     bool Compare(const XboxPath &other) const;
 
+    bool IsRoot() const;
+
 private:
     std::string m_FullPath;
     std::string m_Drive;

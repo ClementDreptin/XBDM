@@ -42,6 +42,11 @@ bool XboxPath::Compare(const XboxPath &other) const
     return String() == other.String();
 }
 
+bool XboxPath::IsRoot() const
+{
+    return m_DirName.empty() || m_DirName == std::string(1, s_Separator);
+}
+
 void XboxPath::Init(const std::string &path)
 {
     // Replace any potential forward slash, this can happen if path was built using the
