@@ -32,6 +32,13 @@ public:
         return Append(path);
     }
 
+    friend XboxPath operator/(const XboxPath &path, const std::string &right)
+    {
+        XboxPath tmp = path;
+        tmp /= right;
+        return tmp;
+    }
+
     inline friend bool operator==(const XboxPath &left, const XboxPath &right)
     {
         return left.Compare(right);
