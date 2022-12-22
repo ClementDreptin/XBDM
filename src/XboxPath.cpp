@@ -9,6 +9,11 @@ XboxPath::XboxPath(const std::string &path)
     Init(path);
 }
 
+XboxPath::XboxPath(const char *path)
+    : XboxPath(std::string(path))
+{
+}
+
 XboxPath XboxPath::Parent() const
 {
     // When the path is a directory (so ends with the separator), we make the offset
