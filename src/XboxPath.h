@@ -8,6 +8,7 @@ class XboxPath
 public:
     XboxPath() = default;
     XboxPath(const std::string &path);
+    XboxPath(const char *path);
     ~XboxPath() = default;
 
     template<typename T>
