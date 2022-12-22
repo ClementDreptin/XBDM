@@ -16,6 +16,9 @@ XboxPath::XboxPath(const char *path)
 
 XboxPath XboxPath::Parent() const
 {
+    if (m_FullPath.empty())
+        return XboxPath();
+
     // When the path is a directory (so ends with the separator), we make the offset
     // to be one character before so that lastSeparatorPos doesn't point the very last
     // separator but the one before
@@ -25,14 +28,14 @@ XboxPath XboxPath::Parent() const
 
     size_t lastSeparatorPos = m_FullPath.find_last_of(s_Separator, offset);
     if (lastSeparatorPos == std::string::npos)
-        throw std::runtime_error("Could not find a separator");
+        return XboxPath(m_Drive + s_Separator);
 
     return XboxPath(m_FullPath.substr(0, lastSeparatorPos));
 }
 
 XboxPath &XboxPath::Append(const std::string &path)
 {
-    if (m_FullPath.back() != s_Separator)
+    if (!m_FullPath.empty() && m_FullPath.back() != s_Separator)
         m_FullPath += s_Separator;
 
     m_FullPath += path;
