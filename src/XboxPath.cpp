@@ -37,6 +37,11 @@ XboxPath &XboxPath::Append(const std::string &path)
     return *this;
 }
 
+bool XboxPath::Compare(const XboxPath &other) const
+{
+    return String() == other.String();
+}
+
 void XboxPath::Init(const std::string &path)
 {
     // Replace any potential forward slash, this can happen if path was built using the
