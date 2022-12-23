@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Definitions.h"
+#include "XboxPath.h"
 
 namespace XBDM
 {
@@ -17,11 +18,11 @@ public:
 
     const std::string &GetName();
     std::vector<Drive> GetDrives();
-    std::set<File> GetDirectoryContents(const std::string &directoryPath);
+    std::set<File> GetDirectoryContents(const XboxPath &directoryPath);
 
-    void LaunchXex(const std::string &xexPath);
+    void LaunchXex(const XboxPath &xexPath);
 
-    std::string GetActiveTitle();
+    XboxPath GetActiveTitle();
     std::string GetType();
 
     void SynchronizeTime();
@@ -31,12 +32,12 @@ public:
     void GoToDashboard();
     void RestartActiveTitle();
 
-    void ReceiveFile(const std::string &remotePath, const std::filesystem::path &localPath);
-    void ReceiveDirectory(const std::string &remotePath, const std::filesystem::path &localPath);
-    void SendFile(const std::string &remotePath, const std::filesystem::path &localPath);
-    void DeleteFile(const std::string &path, bool isDirectory);
-    void CreateDirectory(const std::string &path);
-    void RenameFile(const std::string &oldName, const std::string &newName);
+    void ReceiveFile(const XboxPath &remotePath, const std::filesystem::path &localPath);
+    void ReceiveDirectory(const XboxPath &remotePath, const std::filesystem::path &localPath);
+    void SendFile(const XboxPath &remotePath, const std::filesystem::path &localPath);
+    void DeleteFile(const XboxPath &path, bool isDirectory);
+    void CreateDirectory(const XboxPath &path);
+    void RenameFile(const XboxPath &oldName, const XboxPath &newName);
 
     inline bool IsConnected() { return m_Connected; }
 

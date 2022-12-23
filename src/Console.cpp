@@ -202,11 +202,11 @@ std::vector<Drive> Console::GetDrives()
     return drives;
 }
 
-std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
+std::set<File> Console::GetDirectoryContents(const XboxPath &directoryPath)
 {
     std::set<File> files;
 
-    SendCommand("dirlist name=\"" + directoryPath + "\"");
+    SendCommand("dirlist name=\"" + (directoryPath.String().back() != '\\' ? directoryPath + '\\' : directoryPath) + "\"");
     std::string contentResponse = Receive();
 
     if (contentResponse.size() <= 4)
@@ -263,9 +263,9 @@ std::set<File> Console::GetDirectoryContents(const std::string &directoryPath)
     return files;
 }
 
-void Console::LaunchXex(const std::string &xexPath)
+void Console::LaunchXex(const XboxPath &xexPath)
 {
-    std::string directory = xexPath.substr(0, xexPath.find_last_of('\\') + 1);
+    XboxPath directory = xexPath.Parent();
 
     SendCommand("magicboot title=\"" + xexPath + "\" directory=\"" + directory + "\"");
 
@@ -273,7 +273,7 @@ void Console::LaunchXex(const std::string &xexPath)
     ClearSocket();
 }
 
-std::string Console::GetActiveTitle()
+XboxPath Console::GetActiveTitle()
 {
     SendCommand("xbeinfo running");
     std::string activeTitleResponse = Receive();
@@ -284,7 +284,7 @@ std::string Console::GetActiveTitle()
     if (activeTitleResponse[0] != '2')
         throw std::runtime_error("Couldn't get the active title");
 
-    return GetStringProperty(activeTitleResponse, "name");
+    return XboxPath(GetStringProperty(activeTitleResponse, "name"));
 }
 
 std::string Console::GetType()
@@ -367,12 +367,12 @@ void Console::GoToDashboard()
 
 void Console::RestartActiveTitle()
 {
-    std::string activeTitlePath = GetActiveTitle();
+    XboxPath activeTitlePath = GetActiveTitle();
 
     LaunchXex(activeTitlePath);
 }
 
-void Console::ReceiveFile(const std::string &remotePath, const std::filesystem::path &localPath)
+void Console::ReceiveFile(const XboxPath &remotePath, const std::filesystem::path &localPath)
 {
     char headerBuffer[40] = { 0 };
     std::string header = "203- binary response follows\r\n";
@@ -448,7 +448,7 @@ void Console::ReceiveFile(const std::string &remotePath, const std::filesystem::
     ClearSocket();
 }
 
-void Console::ReceiveDirectory(const std::string &remotePath, const std::filesystem::path &localPath)
+void Console::ReceiveDirectory(const XboxPath &remotePath, const std::filesystem::path &localPath)
 {
     std::set<File> files = GetDirectoryContents(remotePath);
 
@@ -467,7 +467,7 @@ void Console::ReceiveDirectory(const std::string &remotePath, const std::filesys
     }
 }
 
-void Console::SendFile(const std::string &remotePath, const std::filesystem::path &localPath)
+void Console::SendFile(const XboxPath &remotePath, const std::filesystem::path &localPath)
 {
     std::ifstream file;
     file.open(localPath, std::ifstream::binary);
@@ -541,7 +541,7 @@ void Console::SendFile(const std::string &remotePath, const std::filesystem::pat
     ClearSocket();
 }
 
-void Console::DeleteFile(const std::string &path, bool isDirectory)
+void Console::DeleteFile(const XboxPath &path, bool isDirectory)
 {
     if (isDirectory)
     {
@@ -561,7 +561,7 @@ void Console::DeleteFile(const std::string &path, bool isDirectory)
         throw std::runtime_error("Couldn't delete " + path);
 }
 
-void Console::CreateDirectory(const std::string &path)
+void Console::CreateDirectory(const XboxPath &path)
 {
     SendCommand("mkdir name=\"" + path + "\"");
     std::string response = Receive();
@@ -576,7 +576,7 @@ void Console::CreateDirectory(const std::string &path)
         throw std::runtime_error("Couldn't create directory " + path);
 }
 
-void Console::RenameFile(const std::string &oldName, const std::string &newName)
+void Console::RenameFile(const XboxPath &oldName, const XboxPath &newName)
 {
     SendCommand("rename name=\"" + oldName + "\" newname=\"" + newName + "\"");
     std::string response = Receive();
