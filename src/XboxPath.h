@@ -71,7 +71,7 @@ public:
 private:
     std::string m_Path;
 
-    static const char s_Separator = '\\';
+    static const char s_Separator;
 };
 
 }

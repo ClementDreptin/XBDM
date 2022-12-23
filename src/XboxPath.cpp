@@ -4,6 +4,8 @@
 namespace XBDM
 {
 
+const char XboxPath::s_Separator = '\\';
+
 XboxPath::XboxPath(const std::string &path)
 {
     // Replace any potential forward slash, this can happen if path was built using the
