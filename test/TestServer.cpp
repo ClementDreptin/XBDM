@@ -208,7 +208,7 @@ void TestServer::FileAttributes(const std::vector<Arg> &args)
         return;
     }
 
-    size_t fileSize = fs::file_size(path);
+    size_t fileSize = !fs::is_directory(path) ? fs::file_size(path) : 0;
 
     std::stringstream response;
     response << "202- multiline response follows\r\n";
@@ -399,7 +399,14 @@ void TestServer::SendFile(const std::vector<Arg> &args)
         return;
     }
 
+    // The client will create paths using backslashes (\) because that's what the Xbox 360 uses.
+    // For the tests we need to forward slashes (/) on POSIX systems so we patch them here.
+#ifndef _WIN32
+    std::string pathOnServer = args[0].Value;
+    std::replace(pathOnServer.begin(), pathOnServer.end(), '\\', '/');
+#else
     const std::string &pathOnServer = args[0].Value;
+#endif
 
     // Convert the file size that came in as a hex string to a size_t
     size_t fileSize;
@@ -496,25 +503,33 @@ void TestServer::CreateDirectory(const std::vector<Arg> &args)
         return;
     }
 
-    fs::path directoryPath = args[0].Value;
-    fs::path parentPath = directoryPath.parent_path();
+    // The client will create paths using backslashes (\) because that's what the Xbox 360 uses.
+    // For the tests we need to forward slashes (/) on POSIX systems so we patch them here.
+#ifndef _WIN32
+    std::string directoryPath = args[0].Value;
+    std::replace(directoryPath.begin(), directoryPath.end(), '\\', '/');
+#else
+    const std::string &directoryPath = args[0].Value;
+#endif
+
+    fs::path parentPath = fs::path(directoryPath).parent_path();
 
     if (fs::exists(directoryPath))
     {
-        Send("400- " + directoryPath.string() + " already exists\r\n");
+        Send("400- " + directoryPath + " already exists\r\n");
         return;
     }
 
     if (!fs::exists(parentPath) || !fs::is_directory(parentPath))
     {
-        Send("400- Invalid path: " + directoryPath.string() + "\r\n");
+        Send("400- Invalid path: " + directoryPath + "\r\n");
         return;
     }
 
     bool directoryCreated = fs::create_directory(directoryPath);
     if (!directoryCreated)
     {
-        Send("500- Could not create directory at location: " + directoryPath.string() + "\r\n");
+        Send("500- Could not create directory at location: " + directoryPath + "\r\n");
         return;
     }
 
