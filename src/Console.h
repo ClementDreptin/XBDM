@@ -19,6 +19,7 @@ public:
     const std::string &GetName();
     std::vector<Drive> GetDrives();
     std::set<File> GetDirectoryContents(const XboxPath &directoryPath);
+    File GetFileAttributes(const XboxPath &path);
 
     void LaunchXex(const XboxPath &xexPath);
 

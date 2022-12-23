@@ -100,6 +100,35 @@ int main()
         TEST_EQ(throws, true);
     });
 
+    runner.AddTest("Get file attributes", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
+        XBDM::File file = console.GetFileAttributes(pathOnServer.string());
+
+        // This value is hardcoded in the test server instead of the actual file dates for simplicity
+        const time_t creationAndModificationDate = 1447599192;
+
+        TEST_EQ(file.Size, 47);
+        TEST_EQ(file.CreationDate, creationAndModificationDate);
+        TEST_EQ(file.ModificationDate, creationAndModificationDate);
+    });
+
+    runner.AddTest("Get file attributes of inexistant file", [&]() {
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir() / "server" / "inexistant.txt";
+        bool throws = false;
+
+        try
+        {
+            console.GetFileAttributes(inexistantPathOnServer.string());
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "Invalid file path: " + inexistantPathOnServer.string());
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Start XEX", [&]() {
         fs::path xexPath = Utils::GetFixtureDir() /= "file.xex";
         console.LaunchXex(xexPath.string());

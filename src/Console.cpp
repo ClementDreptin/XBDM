@@ -263,6 +263,32 @@ std::set<File> Console::GetDirectoryContents(const XboxPath &directoryPath)
     return files;
 }
 
+File Console::GetFileAttributes(const XboxPath &path)
+{
+    File file;
+
+    SendCommand("getfileattributes name=\"" + path + "\"");
+    std::string attributesResponse = Receive();
+
+    if (attributesResponse.size() <= 4)
+        throw std::runtime_error("Response length too short");
+
+    if (attributesResponse[0] != '2')
+        throw std::invalid_argument("Invalid file path: " + path);
+
+    std::vector<std::string> lines = Utils::String::Split(attributesResponse, "\r\n");
+
+    // Delete the first line because it doesn't contain any info about the files
+    lines.erase(lines.begin());
+
+    const std::string &line = lines[0];
+    file.Size = static_cast<uint64_t>(GetIntegerProperty(line, "sizehi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "sizelo"));
+    file.CreationDate = FILETIME_TO_TIMET(static_cast<uint64_t>(GetIntegerProperty(line, "createhi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "createlo")));
+    file.ModificationDate = FILETIME_TO_TIMET(static_cast<uint64_t>(GetIntegerProperty(line, "changehi")) << 32 | static_cast<uint64_t>(GetIntegerProperty(line, "changelo")));
+
+    return file;
+}
+
 void Console::LaunchXex(const XboxPath &xexPath)
 {
     XboxPath directory = xexPath.Parent();
