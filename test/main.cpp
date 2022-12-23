@@ -144,10 +144,10 @@ int main()
     });
 
     runner.AddTest("Receive file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "client" / "result.txt";
 
-        console.ReceiveFile(pathOnServer.string(), pathOnClient.string());
+        console.ReceiveFile(pathOnServer.string(), pathOnClient);
 
         TEST_EQ(fs::exists(pathOnClient), true);
         TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
@@ -156,10 +156,10 @@ int main()
     });
 
     runner.AddTest("Receive directory", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("clientTmp");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "clientTmp";
 
-        console.ReceiveDirectory(pathOnServer.string(), pathOnClient.string());
+        console.ReceiveDirectory(pathOnServer.string(), pathOnClient);
 
         TEST_EQ(fs::exists(pathOnClient), true);
         TEST_EQ(Utils::CompareFiles(pathOnServer / "file.txt", pathOnClient / "file.txt"), true);
@@ -168,13 +168,13 @@ int main()
     });
 
     runner.AddTest("Receive inexistant file", [&]() {
-        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("result.txt");
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir() / "server" / "inexistant.txt";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "client" / "result.txt";
         bool throws = false;
 
         try
         {
-            console.ReceiveFile(inexistantPathOnServer.string(), pathOnClient.string());
+            console.ReceiveFile(inexistantPathOnServer.string(), pathOnClient);
         }
         catch (const std::exception &exception)
         {
@@ -186,10 +186,10 @@ int main()
     });
 
     runner.AddTest("Send file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("result.txt");
-        fs::path pathOnClient = Utils::GetFixtureDir().append("client").append("file.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "result.txt";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "client" / "file.txt";
 
-        console.SendFile(pathOnServer.string(), pathOnClient.string());
+        console.SendFile(pathOnServer.string(), pathOnClient);
 
         TEST_EQ(fs::exists(pathOnServer), true);
         TEST_EQ(Utils::CompareFiles(pathOnServer, pathOnClient), true);
@@ -198,13 +198,13 @@ int main()
     });
 
     runner.AddTest("Send inexistant file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("result.txt");
-        fs::path inexistantPathOnClient = Utils::GetFixtureDir().append("client").append("inexistant.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "result.txt";
+        fs::path inexistantPathOnClient = Utils::GetFixtureDir() / "client" / "inexistant.txt";
         bool throws = false;
 
         try
         {
-            console.SendFile(pathOnServer.string(), inexistantPathOnClient.string());
+            console.SendFile(pathOnServer.string(), inexistantPathOnClient);
         }
         catch (const std::exception &exception)
         {
@@ -217,14 +217,14 @@ int main()
 
     runner.AddTest("Delete file", [&]() {
         // This won't actually delete the file
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
         console.DeleteFile(pathOnServer.string(), false);
 
         // No value to check here, we just make sure Console::DeleteFile doesn't throw
     });
 
     runner.AddTest("Delete inexistant file", [&]() {
-        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir() / "server" / "inexistant.txt";
         bool throws = false;
 
         try
@@ -248,7 +248,7 @@ int main()
     });
 
     runner.AddTest("Delete inexistant directory", [&]() {
-        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant");
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir() / "server" / "inexistant";
         bool throws = false;
 
         try
@@ -266,7 +266,7 @@ int main()
 
     runner.AddTest("Create directory", [&]() {
         // This won't actually create a new directory
-        console.CreateDirectory(Utils::GetFixtureDir().append("newDirectory").string());
+        console.CreateDirectory((Utils::GetFixtureDir() / "newDirectory").string());
 
         // No value to check here, we just make sure Console::CreateDirectory doesn't throw
     });
@@ -290,16 +290,16 @@ int main()
 
     runner.AddTest("Rename file", [&]() {
         // This won't actually rename the file
-        fs::path oldPathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
-        fs::path newPathOnServer = Utils::GetFixtureDir().append("server").append("newFile.txt");
+        fs::path oldPathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
+        fs::path newPathOnServer = Utils::GetFixtureDir() / "server" / "newFile.txt";
         console.RenameFile(oldPathOnServer.string(), newPathOnServer.string());
 
         // No value to check here, we just make sure Console::RenameFile doesn't throw
     });
 
     runner.AddTest("Rename inexistant file", [&]() {
-        fs::path inexistantPathOnServer = Utils::GetFixtureDir().append("server").append("inexistant.txt");
-        fs::path newPathOnServer = Utils::GetFixtureDir().append("server").append("newFile.txt");
+        fs::path inexistantPathOnServer = Utils::GetFixtureDir() / "server" / "inexistant.txt";
+        fs::path newPathOnServer = Utils::GetFixtureDir() / "server" / "newFile.txt";
         bool throws = false;
 
         try
@@ -316,7 +316,7 @@ int main()
     });
 
     runner.AddTest("Rename file to already existing file", [&]() {
-        fs::path pathOnServer = Utils::GetFixtureDir().append("server").append("file.txt");
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
         bool throws = false;
 
         try
