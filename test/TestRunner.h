@@ -1,9 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <sstream>
 #include <vector>
-#include <utility>
 #include <functional>
 
 // clang-format off
@@ -14,13 +12,18 @@
 class TestRunner
 {
     using TestFunction = std::function<void()>;
-    using TestCase = std::pair<const char *, TestFunction>;
+
+    struct TestCase
+    {
+        const char *Name = nullptr;
+        TestFunction Function = TestFunction();
+        bool Prioritized = false;
+    };
 
 public:
     TestRunner() = default;
 
-    void AddTest(const char *testName, TestFunction testFunction);
-    bool RunOnly(const char *testName, TestFunction testFunction);
+    void AddTest(const char *testName, TestFunction testFunction, bool prioritized = false);
     bool RunTests();
 
 private:

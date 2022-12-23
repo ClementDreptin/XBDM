@@ -1,23 +1,22 @@
 #include "TestRunner.h"
 
-void TestRunner::AddTest(const char *testName, TestFunction testFunction)
+#include <iostream>
+#include <algorithm>
+
+void TestRunner::AddTest(const char *testName, TestFunction testFunction, bool prioritized)
 {
-    m_TestCases.push_back(std::make_pair(testName, testFunction));
-}
-
-bool TestRunner::RunOnly(const char *testName, TestFunction testFunction)
-{
-    Run(std::make_pair(testName, testFunction));
-
-    DisplayRecap();
-
-    return m_FailingTests == 0;
+    m_TestCases.push_back({ testName, testFunction, prioritized });
 }
 
 bool TestRunner::RunTests()
 {
-    for (auto &testCase : m_TestCases)
-        Run(testCase);
+    auto prioritizedTest = std::find_if(m_TestCases.begin(), m_TestCases.end(), [](const TestCase &testCase) { return testCase.Prioritized == true; });
+
+    if (prioritizedTest != m_TestCases.end())
+        Run(*prioritizedTest);
+    else
+        for (auto &testCase : m_TestCases)
+            Run(testCase);
 
     DisplayRecap();
 
@@ -26,17 +25,15 @@ bool TestRunner::RunTests()
 
 void TestRunner::Run(const TestCase &testCase)
 {
-    auto &[testName, testFunction] = testCase;
-
     try
     {
-        testFunction();
-        std::cout << "[----------] " << testName << '\n';
+        testCase.Function();
+        std::cout << "[----------] " << testCase.Name << '\n';
         m_PassingTests++;
     }
     catch (const std::exception &exception)
     {
-        std::cout << "[  FAILED  ] " << testName << ". Error: " << exception.what() << '\n';
+        std::cout << "[  FAILED  ] " << testCase.Name << ". Error: " << exception.what() << '\n';
         m_FailingTests++;
     }
 }
