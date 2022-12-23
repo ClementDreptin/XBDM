@@ -244,6 +244,37 @@ int main()
         TEST_EQ(throws, true);
     });
 
+    runner.AddTest("Send a directory", [&]() {
+        fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "folder";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "client" / "folder";
+
+        console.SendDirectory(pathOnServer.string(), pathOnClient);
+
+        TEST_EQ(fs::exists(pathOnServer), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer / "file1.txt", pathOnClient / "file1.txt"), true);
+        TEST_EQ(Utils::CompareFiles(pathOnServer / "subfolder" / "file2.txt", pathOnClient / "subfolder" / "file2.txt"), true);
+
+        fs::remove_all(pathOnServer);
+    });
+
+    runner.AddTest("Send a directory where a directory already exists on the console", [&]() {
+        fs::path existingPathOnServer = Utils::GetFixtureDir() / "server";
+        fs::path pathOnClient = Utils::GetFixtureDir() / "client" / "folder";
+        bool throws = false;
+
+        try
+        {
+            console.SendDirectory(existingPathOnServer.string(), pathOnClient);
+        }
+        catch (const std::exception &exception)
+        {
+            throws = true;
+            TEST_EQ(exception.what(), "A file or directory with the name \"" + existingPathOnServer.string() + "\" already exists");
+        }
+
+        TEST_EQ(throws, true);
+    });
+
     runner.AddTest("Delete file", [&]() {
         // This won't actually delete the file
         fs::path pathOnServer = Utils::GetFixtureDir() / "server" / "file.txt";
@@ -294,10 +325,12 @@ int main()
     });
 
     runner.AddTest("Create directory", [&]() {
-        // This won't actually create a new directory
-        console.CreateDirectory((Utils::GetFixtureDir() / "newDirectory").string());
+        fs::path pathOnServer = Utils::GetFixtureDir() / "newDirectory";
+        console.CreateDirectory(pathOnServer.string());
 
         // No value to check here, we just make sure Console::CreateDirectory doesn't throw
+
+        fs::remove(pathOnServer);
     });
 
     runner.AddTest("Create already existing directory", [&]() {

@@ -52,6 +52,7 @@ private:
     void DriveList(const std::vector<Arg> &args);
     void DriveFreeSpace(const std::vector<Arg> &args);
     void DirectoryContents(const std::vector<Arg> &args);
+    void FileAttributes(const std::vector<Arg> &args);
     void MagicBoot(const std::vector<Arg> &args);
     void ActiveTitle(const std::vector<Arg> &args);
     void ConsoleType(const std::vector<Arg> &args);

@@ -567,6 +567,35 @@ void Console::SendFile(const XboxPath &remotePath, const std::filesystem::path &
     ClearSocket();
 }
 
+void Console::SendDirectory(const XboxPath &remotePath, const std::filesystem::path &localPath)
+{
+    bool remotePathAlreadyExists = false;
+
+    // We expect GetFileAttributes to throw here because we need remotePath not to exist
+    try
+    {
+        GetFileAttributes(remotePath);
+        remotePathAlreadyExists = true;
+    }
+    catch (const std::exception &)
+    {
+    }
+
+    if (remotePathAlreadyExists)
+        throw std::invalid_argument("A file or directory with the name \"" + remotePath + "\" already exists");
+
+    CreateDirectory(remotePath);
+
+    for (const auto &entry : std::filesystem::directory_iterator(localPath))
+    {
+        std::filesystem::path entryFileName = entry.path().filename();
+        XboxPath nextRemotePath = remotePath / entryFileName.string();
+        std::filesystem::path nextLocalPath = localPath / entryFileName;
+
+        entry.is_directory() ? SendDirectory(nextRemotePath, nextLocalPath) : SendFile(nextRemotePath, nextLocalPath);
+    }
+}
+
 void Console::DeleteFile(const XboxPath &path, bool isDirectory)
 {
     if (isDirectory)

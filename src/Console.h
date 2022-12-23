@@ -36,6 +36,7 @@ public:
     void ReceiveFile(const XboxPath &remotePath, const std::filesystem::path &localPath);
     void ReceiveDirectory(const XboxPath &remotePath, const std::filesystem::path &localPath);
     void SendFile(const XboxPath &remotePath, const std::filesystem::path &localPath);
+    void SendDirectory(const XboxPath &remotePath, const std::filesystem::path &localPath);
     void DeleteFile(const XboxPath &path, bool isDirectory);
     void CreateDirectory(const XboxPath &path);
     void RenameFile(const XboxPath &oldName, const XboxPath &newName);

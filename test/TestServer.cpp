@@ -20,6 +20,7 @@ TestServer::TestServer()
     m_CommandMap["drivelist"] = BIND_FN(DriveList);
     m_CommandMap["drivefreespace"] = BIND_FN(DriveFreeSpace);
     m_CommandMap["dirlist"] = BIND_FN(DirectoryContents);
+    m_CommandMap["getfileattributes"] = BIND_FN(FileAttributes);
     m_CommandMap["magicboot"] = BIND_FN(MagicBoot);
     m_CommandMap["xbeinfo"] = BIND_FN(ActiveTitle);
     m_CommandMap["consoletype"] = BIND_FN(ConsoleType);
@@ -159,7 +160,7 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
     std::stringstream response;
     response << "202- multiline response follows\r\n";
 
-    for (const auto &entry : std::filesystem::directory_iterator(directoryPath))
+    for (const auto &entry : fs::directory_iterator(directoryPath))
     {
         std::stringstream line;
         line << "name=\"" << entry.path().filename().string() << "\"";
@@ -181,6 +182,42 @@ void TestServer::DirectoryContents(const std::vector<Arg> &args)
 
         response << line.str();
     }
+
+    Send(response.str());
+}
+
+void TestServer::FileAttributes(const std::vector<Arg> &args)
+{
+    if (args.size() != 1)
+    {
+        Send("400- wrong number of arguments provided, one expected\r\n");
+        return;
+    }
+
+    if (args[0].Name != "name")
+    {
+        Send("400- argument 'name' not found\r\n");
+        return;
+    }
+
+    std::string path = args[0].Value;
+
+    if (!fs::exists(path))
+    {
+        Send("404- " + path + " not found\r\n");
+        return;
+    }
+
+    size_t fileSize = fs::file_size(path);
+
+    std::stringstream response;
+    response << "202- multiline response follows\r\n";
+
+    response << "sizehi=0x" << std::hex << (fileSize & 0xffff0000);
+    response << " sizelo=0x" << std::hex << (fileSize & 0x0000ffff);
+    response << " createhi=0x01d11fb5 createlo=0x59683c00";
+    response << " changehi=0x01d11fb5 changelo=0x59683c00";
+    response << "\r\n.\r\n";
 
     Send(response.str());
 }
@@ -464,13 +501,20 @@ void TestServer::CreateDirectory(const std::vector<Arg> &args)
 
     if (fs::exists(directoryPath))
     {
-        Send("400- " + args[0].Value + " already exists\r\n");
+        Send("400- " + directoryPath.string() + " already exists\r\n");
         return;
     }
 
     if (!fs::exists(parentPath) || !fs::is_directory(parentPath))
     {
-        Send("400- Invalid path: " + args[0].Value + "\r\n");
+        Send("400- Invalid path: " + directoryPath.string() + "\r\n");
+        return;
+    }
+
+    bool directoryCreated = fs::create_directory(directoryPath);
+    if (!directoryCreated)
+    {
+        Send("500- Could not create directory at location: " + directoryPath.string() + "\r\n");
         return;
     }
 
