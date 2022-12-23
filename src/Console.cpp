@@ -206,7 +206,7 @@ std::set<File> Console::GetDirectoryContents(const XboxPath &directoryPath)
 {
     std::set<File> files;
 
-    SendCommand("dirlist name=\"" + directoryPath + "\"");
+    SendCommand("dirlist name=\"" + (directoryPath.String().back() != '\\' ? directoryPath + '\\' : directoryPath) + "\"");
     std::string contentResponse = Receive();
 
     if (contentResponse.size() <= 4)

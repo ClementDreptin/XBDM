@@ -335,73 +335,89 @@ int main()
     runner.AddTest("Create an XboxPath", []() {
         XBDM::XboxPath completePath("hdd:\\Games\\MyGame\\default.xex");
         TEST_EQ(completePath.Drive(), "hdd:");
-        TEST_EQ(completePath.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(completePath.Parent(), "hdd:\\Games\\MyGame");
         TEST_EQ(completePath.FileName(), "default");
         TEST_EQ(completePath.Extension(), ".xex");
 
         XBDM::XboxPath noExtension("hdd:\\Games\\MyGame\\default");
         TEST_EQ(noExtension.Drive(), "hdd:");
-        TEST_EQ(noExtension.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noExtension.Parent(), "hdd:\\Games\\MyGame");
         TEST_EQ(noExtension.FileName(), "default");
         TEST_EQ(noExtension.Extension(), "");
 
         XBDM::XboxPath directory("hdd:\\Games\\MyGame\\");
         TEST_EQ(directory.Drive(), "hdd:");
-        TEST_EQ(directory.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(directory.Parent(), "hdd:\\Games");
         TEST_EQ(directory.FileName(), "");
         TEST_EQ(directory.Extension(), "");
 
         XBDM::XboxPath fileAtRoot("hdd:\\file.txt");
         TEST_EQ(fileAtRoot.Drive(), "hdd:");
-        TEST_EQ(fileAtRoot.DirName(), "\\");
+        TEST_EQ(fileAtRoot.Parent(), "hdd:");
         TEST_EQ(fileAtRoot.FileName(), "file");
         TEST_EQ(fileAtRoot.Extension(), ".txt");
 
         XBDM::XboxPath relativePath("hdd:Games\\MyGame\\default.xex");
         TEST_EQ(relativePath.Drive(), "hdd:");
-        TEST_EQ(relativePath.DirName(), "Games\\MyGame\\");
+        TEST_EQ(relativePath.Parent(), "hdd:Games\\MyGame");
         TEST_EQ(relativePath.FileName(), "default");
         TEST_EQ(relativePath.Extension(), ".xex");
 
         XBDM::XboxPath noDrive("\\Games\\MyGame\\default.xex");
         TEST_EQ(noDrive.Drive(), "");
-        TEST_EQ(noDrive.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noDrive.Parent(), "\\Games\\MyGame");
         TEST_EQ(noDrive.FileName(), "default");
         TEST_EQ(noDrive.Extension(), ".xex");
 
         XBDM::XboxPath noDriveDir("\\Games\\MyGame\\");
         TEST_EQ(noDriveDir.Drive(), "");
-        TEST_EQ(noDriveDir.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(noDriveDir.Parent(), "\\Games");
         TEST_EQ(noDriveDir.FileName(), "");
         TEST_EQ(noDriveDir.Extension(), "");
 
-        XBDM::XboxPath fileNameStartingWithDot("hdd:\\Games\\MyGame\\.hidden");
-        TEST_EQ(fileNameStartingWithDot.Drive(), "hdd:");
-        TEST_EQ(fileNameStartingWithDot.DirName(), "\\Games\\MyGame\\");
-        TEST_EQ(fileNameStartingWithDot.FileName(), ".hidden");
-        TEST_EQ(fileNameStartingWithDot.Extension(), "");
-    });
+        XBDM::XboxPath dotFile("hdd:\\Games\\MyGame\\.hidden");
+        TEST_EQ(dotFile.Drive(), "hdd:");
+        TEST_EQ(dotFile.Parent(), "hdd:\\Games\\MyGame");
+        TEST_EQ(dotFile.FileName(), ".hidden");
+        TEST_EQ(dotFile.Extension(), "");
 
-    runner.AddTest("Get the parent directory of an XboxPath", []() {
-        XBDM::XboxPath filePath = "hdd:\\Games\\MyGame\\default.xex";
-        TEST_EQ(filePath.Parent().String(), "hdd:\\Games\\MyGame");
+        XBDM::XboxPath justDrive = "hdd:";
+        TEST_EQ(justDrive.Drive(), "hdd:");
+        TEST_EQ(justDrive.Parent(), "hdd:");
+        TEST_EQ(justDrive.FileName(), "");
+        TEST_EQ(justDrive.Extension(), "");
 
-        XBDM::XboxPath dirPath = "hdd:\\Games\\MyGame\\";
-        TEST_EQ(dirPath.Parent().String(), "hdd:\\Games");
+        XBDM::XboxPath justFile = "file.txt";
+        TEST_EQ(justFile.Drive(), "");
+        TEST_EQ(justFile.Parent(), "");
+        TEST_EQ(justFile.FileName(), "file");
+        TEST_EQ(justFile.Extension(), ".txt");
+
+        XBDM::XboxPath empty = "";
+        TEST_EQ(empty.Drive(), "");
+        TEST_EQ(empty.Parent(), "");
+        TEST_EQ(empty.FileName(), "");
+        TEST_EQ(empty.Extension(), "");
+
+        XBDM::XboxPath dotFileAtRoot = "hdd:.hidden";
+        TEST_EQ(dotFileAtRoot.Drive(), "hdd:");
+        TEST_EQ(dotFileAtRoot.Parent(), "hdd:");
+        TEST_EQ(dotFileAtRoot.FileName(), ".hidden");
+        TEST_EQ(dotFileAtRoot.Extension(), "");
     });
 
     runner.AddTest("Append string to an XboxPath", []() {
         XBDM::XboxPath pathWithEndingSeparator = "hdd:\\Games\\MyGame\\";
         pathWithEndingSeparator /= "default.xex";
         TEST_EQ(pathWithEndingSeparator.Drive(), "hdd:");
-        TEST_EQ(pathWithEndingSeparator.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(pathWithEndingSeparator.Parent(), "hdd:\\Games\\MyGame");
         TEST_EQ(pathWithEndingSeparator.FileName(), "default");
         TEST_EQ(pathWithEndingSeparator.Extension(), ".xex");
 
         XBDM::XboxPath pathWithoutEndingSeparator = "hdd:\\Games\\MyGame";
         pathWithoutEndingSeparator /= "default.xex";
         TEST_EQ(pathWithoutEndingSeparator.Drive(), "hdd:");
-        TEST_EQ(pathWithoutEndingSeparator.DirName(), "\\Games\\MyGame\\");
+        TEST_EQ(pathWithoutEndingSeparator.Parent(), "hdd:\\Games\\MyGame");
         TEST_EQ(pathWithoutEndingSeparator.FileName(), "default");
         TEST_EQ(pathWithoutEndingSeparator.Extension(), ".xex");
     });
@@ -418,7 +434,7 @@ int main()
     runner.AddTest("Check if an XboxPath is at the root of a drive", []() {
         XBDM::XboxPath rootWithSeparator = "hdd:\\";
         XBDM::XboxPath rootWithoutSeparator = "hdd:";
-        XBDM::XboxPath notRoot = "Games\\MyGame\\";
+        XBDM::XboxPath notRoot = "Games\\";
 
         TEST_EQ(rootWithSeparator.IsRoot(), true);
         TEST_EQ(rootWithoutSeparator.IsRoot(), true);

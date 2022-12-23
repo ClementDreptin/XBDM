@@ -28,12 +28,12 @@ public:
         return stream << path.String();
     }
 
-    inline XboxPath &operator/=(const std::string &path)
+    inline XboxPath &operator/=(const XboxPath &path)
     {
         return Append(path);
     }
 
-    friend XboxPath operator/(const XboxPath &path, const std::string &right)
+    friend XboxPath operator/(const XboxPath &path, const XboxPath &right)
     {
         XboxPath tmp = path;
         tmp /= right;
@@ -45,35 +45,33 @@ public:
         return left.Compare(right);
     }
 
-    inline const std::string &String() const { return m_FullPath; }
+    inline friend bool operator!=(const XboxPath &left, const XboxPath &right)
+    {
+        return !(left == right);
+    }
 
-    inline const std::string &Drive() const { return m_Drive; }
+    inline const std::string &String() const { return m_Path; }
 
-    inline const std::string &DirName() const { return m_DirName; }
+    XboxPath Drive() const;
 
-    inline const std::string &FileName() const { return m_FileName; }
+    XboxPath FileName() const;
 
-    inline const std::string &Extension() const { return m_Extension; }
+    XboxPath Extension() const;
 
     XboxPath Parent() const;
 
-    XboxPath &Append(const std::string &path);
+    XboxPath &Append(const XboxPath &path);
 
     bool Compare(const XboxPath &other) const;
+
+    bool IsEmpty() const;
 
     bool IsRoot() const;
 
 private:
-    std::string m_FullPath;
-    std::string m_Drive;
-    std::string m_DirName;
-    std::string m_FileName;
-    std::string m_Extension;
+    std::string m_Path;
 
     static const char s_Separator = '\\';
-
-    void Init(const std::string &path);
-    void SplitPath(const std::string &path);
 };
 
 }
